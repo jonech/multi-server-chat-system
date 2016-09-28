@@ -43,13 +43,16 @@ public class ServerListener extends Thread {
 		try {
 			System.out.println(serverID + " - listening to server on port "+ listeningSocket.getLocalSocketAddress());
 			while (true) {
+				// accept the connection from server
 				Socket server = listeningSocket.accept();
 				System.out.println(serverID + " - received server connection: " + server.getRemoteSocketAddress());
 
 				BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(server.getOutputStream()));
 				BufferedReader reader = new BufferedReader(new InputStreamReader(server.getInputStream()));
 
+				// read the request from server
 				String request = reader.readLine();
+				// parse the request
 				JSONObject requestJSON = (JSONObject) new JSONParser().parse(request);
 				String requestType = (String) requestJSON.get(JSONTag.TYPE);
 
@@ -128,6 +131,7 @@ public class ServerListener extends Thread {
 					writer.flush();
 					System.out.println(serverID + " - response sent to " + server.getRemoteSocketAddress());
 				}
+				// disconnect the server
 				server.close();
 			}
 

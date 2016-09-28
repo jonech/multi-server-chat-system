@@ -25,6 +25,7 @@ public class ClientConnection extends Thread {
 	public String clientID = null;
 	public JSONParser parser = new JSONParser();
 
+	// the current room that the client is in
 	public ChatRoom currentRoom;
 
 	public ClientConnection(Socket socket, String serverID)
@@ -54,19 +55,21 @@ public class ClientConnection extends Thread {
 				Message message = messageQueue.take();
 
 				if(!message.isFromConnection() && message.getMessage().equals("exit")) {
-
 					// disconnect the client
 					Disconnect();
 					break;
 				}
 
 				// client are forced to leave room by thread
+				// this will put client to main hall
 				if (!message.isFromConnection() && message.getMessage().equals("leave_room")) {
 					ServerState.getInstance().safeChangeRoom(currentRoom, ServerState.getInstance().getServerChatRoom(getName()), this);
 				}
 
 				if(message.isFromConnection()) {
 
+					// this is a message for broadcasting
+					// anything that assign as this object will be put into the message queue of other ClientConnection
 					Message msgForThreads = null;
 
 					JSONObject messageJSONObj = (JSONObject) parser.parse(message.getMessage());
@@ -78,24 +81,27 @@ public class ClientConnection extends Thread {
 						clientID = (String) messageJSONObj.get(JSONTag.IDENTITY);
 						boolean joinSuccess = ServerState.getInstance().getServerObject(serverID).requestJoinServer(clientID);
 
-						// accept the client
+						// accept or reject the client by responding the JSON message
 						JSONObject responseJSON = new JSONObject();
 						responseJSON.put(JSONTag.TYPE, JSONTag.NEWIDENTITY);
 						if (joinSuccess)
 							responseJSON.put(JSONTag.APPROVED, JSONTag.TRUE);
 						else
 							responseJSON.put(JSONTag.APPROVED, JSONTag.FALSE);
-
 						write(responseJSON.toJSONString());
-						this.currentRoom = ServerState.getInstance().joinGlobalChatRoom(
-								"MainHall-"+getName(), this);
+
 						if (joinSuccess) {
-							// create a broadcast and spcify which server and which room it is for
+							// put the client to the main hall
+							this.currentRoom = ServerState.getInstance().joinGlobalChatRoom(
+									"MainHall-"+getName(), this);
+
+							// create a broadcast to other client
 							JSONObject broadcastJSON = new JSONObject();
 							broadcastJSON.put(JSONTag.TYPE, JSONTag.ROOMCHANGE);
 							broadcastJSON.put(JSONTag.IDENTITY, clientID);
 							broadcastJSON.put(JSONTag.FORMER, "");
 							broadcastJSON.put(JSONTag.ROOMID, this.currentRoom.getRoomName());
+							// create message for of other client
 							msgForThreads = new Message(false, broadcastJSON.toJSONString());
 						}
 					}
@@ -110,8 +116,8 @@ public class ClientConnection extends Thread {
 						for ( ChatRoom room : ServerState.getInstance().getAllGlobalLocalChatRoom()) {
 							roomArray.add(room.getRoomName());
 						}
-
 						response.put(JSONTag.ROOMS, roomArray);
+						// only response to the requested client
 						getMessageQueue().add(new Message(false, response.toJSONString()));
 					}
 
@@ -128,18 +134,18 @@ public class ClientConnection extends Thread {
 					/* client CREATE a new room */
 					else if (requestType.equals(JSONTag.CREATEROOM)) {
 						String newRoomID = (String) messageJSONObj.get(JSONTag.ROOMID);
+						// request the local server to create room
 						boolean success = ServerState.getInstance().getServerObject(serverID).requestCreateChatRoom(getName(), newRoomID, clientID);
 
 						JSONObject response = new JSONObject();
 						response.put(JSONTag.TYPE, JSONTag.CREATEROOM);
 						response.put(JSONTag.ROOMID, newRoomID);
-
+						// response to client if success or fail to CREATE room
 						if (success) {
 							response.put(JSONTag.APPROVED, JSONTag.TRUE);
 							getMessageQueue().add(new Message(false, response.toJSONString()));
 							ChatRoom newRoom = ServerState.getInstance().getServerObject(serverID).getRoom(newRoomID);
 							ServerState.getInstance().safeChangeRoom(currentRoom, newRoom, this);
-							//changeRoom(currentRoom, ServerState.getInstance().getServerObject(serverID).getRoom(newRoomID));
 						}
 						else {
 							response.put(JSONTag.APPROVED, JSONTag.FALSE);
@@ -154,12 +160,13 @@ public class ClientConnection extends Thread {
 						boolean joinSuccess = false;
 
 						for (ChatRoom room : ServerState.getInstance().getAllGlobalLocalChatRoom()) {
-
+							// client requested to join a local chat room
 							if (room.getRoomName().equals(newRoomID) && room.server.equals(this.serverID)) {
 								ServerState.getInstance().safeChangeRoom(currentRoom, room, this);
 								joinSuccess = true;
 								break;
 							}
+							// client requested to join a chat room from other server
 							else if (room.getRoomName().equals(newRoomID) && !room.server.equals(this.serverID)) {
 								routeClient(ServerState.getInstance().getServerObject(room.server), newRoomID);
 								joinSuccess = true;
@@ -194,7 +201,6 @@ public class ClientConnection extends Thread {
 						responseJSON.put(JSONTag.ROOMID, currentRoom.getRoomName());
 
 						JSONArray clientArray = new JSONArray();
-						//ChatRoom roomObject = ServerState.getInstance().getChatRoomFromAll(currentRoom);
 						for (ClientConnection client : currentRoom.getConnectedClients()) {
 							clientArray.add(client.clientID);
 						}
@@ -209,7 +215,7 @@ public class ClientConnection extends Thread {
 					}
 
 					if (msgForThreads != null) {
-						//ChatRoom roomObject = ServerState.getInstance().getChatRoomFromAll(currentRoom);
+						// put message to the client that is in the current same room
 						List<ClientConnection> connectedClients = currentRoom.getConnectedClients();
 						for(ClientConnection client : connectedClients) {
 							client.getMessageQueue().add(msgForThreads);
@@ -219,7 +225,7 @@ public class ClientConnection extends Thread {
 				}
 
 				else if (!message.getMessage().equals("leave_room")){
-					// If the message is from a thread and it isn't exit, then
+					// If the message is from a thread and it isn't asking to leave room, then
 					// it is a message that needs to be sent to the client
 					write(message.getMessage());
 				}
@@ -251,13 +257,11 @@ public class ClientConnection extends Thread {
 		broadcastJSON.put(JSONTag.IDENTITY, this.clientID);
 		broadcastJSON.put(JSONTag.FORMER, currentRoom.getRoomName());
 		broadcastJSON.put(JSONTag.ROOMID, roomID);
-
-		//ChatRoom roomObject = ServerState.getInstance().getChatRoomFromAll(currentRoom);
 		for (ClientConnection client : currentRoom.getConnectedClients()) {
 			client.getMessageQueue().add(new Message(false, broadcastJSON.toJSONString()));
 		}
 
-		// make the client leave the room
+		// make the client leave the current room
 		currentRoom.clientLeave(this);
 	}
 
@@ -269,11 +273,13 @@ public class ClientConnection extends Thread {
 		responseJSON.put(JSONTag.SERVERID, this.serverID);
 
 		this.clientID = clientID;
+		// add the client to the local server first
 		ServerState.getInstance().getServerObject(getName()).getLocalClientIDList().add(clientID);
 
-		// response to client first
+		// response to client
 		getMessageQueue().add(new Message(false, responseJSON.toJSONString()));
 
+		// find the chat room that the client requested to join
 		ChatRoom newRoom = ServerState.getInstance().getChatRoomFromAll(roomID);
 
 		// put the client into the requested room
@@ -295,8 +301,6 @@ public class ClientConnection extends Thread {
 		broadcastJSON.put(JSONTag.IDENTITY, clientID);
 		broadcastJSON.put(JSONTag.FORMER, former);
 		broadcastJSON.put(JSONTag.ROOMID, currentRoom.getRoomName());
-
-		//ChatRoom roomObject = ServerState.getInstance().getServerObject(this.serverID).getRoom(currentRoom);
 		for (ClientConnection client : currentRoom.getConnectedClients()) {
 			client.getMessageQueue().add(new Message(false, broadcastJSON.toJSONString()));
 		}
@@ -305,11 +309,11 @@ public class ClientConnection extends Thread {
 
 	public void deleteRoom(String roomName)
 	{
-
 		JSONObject responseJSON = new JSONObject();
 		responseJSON.put(JSONTag.TYPE, JSONTag.DELETEROOM);
 		responseJSON.put(JSONTag.ROOMID, roomName);
 
+		// check if the client is owner and the room exists
 		if (currentRoom.getOwner().matches(clientID) && currentRoom.getRoomName().matches(roomName)) {
 
 			// response to client that approval is TRUE
@@ -333,7 +337,7 @@ public class ClientConnection extends Thread {
 
 	public void Disconnect()
 	{
-		// officially remove the client
+		// officially remove the client from local client list
 		ServerState.getInstance().getServerObject(this.serverID).getLocalClientIDList().remove(this.clientID);
 		System.out.println("client disconnected: " + clientSocket.getRemoteSocketAddress());
 
@@ -358,6 +362,7 @@ public class ClientConnection extends Thread {
 
 	public void clientQuit()
 	{
+		// When client request to QUIT
 		ServerState.getInstance().getServerObject(this.serverID).getLocalClientIDList().remove(this.clientID);
 		System.out.println("client disconnected: " + clientSocket.getRemoteSocketAddress());
 

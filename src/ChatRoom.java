@@ -17,11 +17,13 @@ public class ChatRoom {
 	private String roomName;
 	public String server;
 	private String owner;
+
+	// list of client id, probably redundant...
 	private List<String> clientList;
 
+	// list of local client connection
 	private List<ClientConnection> clients;
 
-	public JSONParser parser = new JSONParser();
 
 	public ChatRoom(String server, String roomName, String owner)
 	{

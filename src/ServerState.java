@@ -6,15 +6,19 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by jonech on 8/09/2016.
+ * Server State stores ChatServer and Main-Halls
  */
 public class ServerState {
 
 	private static ServerState instance;
 
+	// cache up all the ChatServer
 	private HashMap<String, ChatServer> serverObjectMap;
+	// all the coordination port of the ChatServer
 	private HashMap<String, Integer> serverPortMap;
+	// all the server address for the Chat Server
 	private HashMap<String, String> serverAddrMap;
+	// all the Main-Hall
 	private List<ChatRoom> globalRoomList;
 
 	private ServerState() {
@@ -31,19 +35,23 @@ public class ServerState {
 		return instance;
 	}
 
-
+	/* get a list of Main-Hall */
 	public synchronized List<ChatRoom> getGlobalRooms() { return globalRoomList; }
 
+	/* get the HashMap for server port */
 	public synchronized HashMap<String, Integer> getServerPortMap() {
 		return serverPortMap;
 	}
 
+	/* get the HashMap for server address */
 	public synchronized HashMap<String, String> getServerAddrMap() {
 		return serverAddrMap;
 	}
 
+	/* get the ChatServer object */
 	public synchronized ChatServer getServerObject(String serverID) { return serverObjectMap.get(serverID); }
 
+	/* get ALL ChatServer object */
 	public synchronized List<ChatServer> getAllServerObject() {
 		List<ChatServer> allServers = new ArrayList<>();
 		for (HashMap.Entry<String, ChatServer> severObject : serverObjectMap.entrySet()) {
@@ -52,19 +60,13 @@ public class ServerState {
 		return allServers;
 	}
 
+	/* create a Main-Hall, called when ChatServer is created */
 	public synchronized void createGlobalChatRoom(String server, String roomName, String owner) {
-
 		ChatRoom room = new ChatRoom(server, roomName, owner);
 		globalRoomList.add(room);
 	}
 
-	public synchronized void serverConnected(String serverID, ChatServer server, int port) {
-		System.out.println("cached: " + serverID + " "+port);
-		serverPortMap.put(serverID, port);
-		serverAddrMap.put(serverID, "localhost");
-		serverObjectMap.put(serverID, server);
-	}
-
+	/* cache up the ChatServer details (coordination port, address, id) */
 	public synchronized void serverConnected(String serverID, ChatServer server, String address, int port) {
 		System.out.println("cached: " + serverID + " "+port);
 		serverPortMap.put(serverID, port);
@@ -72,6 +74,7 @@ public class ServerState {
 		serverObjectMap.put(serverID, server);
 	}
 
+	/* get ALL Local Chat Room and Main-Hall */
 	public synchronized List<ChatRoom> getAllGlobalLocalChatRoom()
 	{
 		List<ChatRoom> allRooms = new ArrayList<>();
@@ -87,6 +90,7 @@ public class ServerState {
 		return allRooms;
 	}
 
+	/* find the ChatRoom object from all ChatServer, including the Main-Hall */
 	public synchronized ChatRoom getChatRoomFromAll(String roomName)
 	{
 		for (ChatRoom globalRoom : getGlobalRooms()) {
@@ -106,6 +110,7 @@ public class ServerState {
 		return null;
 	}
 
+	/* client joins into the Main-Hall */
 	public synchronized ChatRoom joinGlobalChatRoom(String roomName, ClientConnection client) {
 
 		for (ChatRoom room : globalRoomList) {
@@ -117,13 +122,13 @@ public class ServerState {
 		return null;
 	}
 
+	/* get the Main-Hall object */
 	public synchronized ChatRoom getServerChatRoom(String server) {
 		for (ChatRoom room : globalRoomList) {
 			if (room.getRoomName().matches((String)"MainHall-" + server)) {
 				return room;
 			}
 		}
-
 		return null;
 	}
 
@@ -144,18 +149,20 @@ public class ServerState {
 
 		if (!former.getRoomName().matches(newRoom.getRoomName())) {
 
-			//ChatRoom oldRoom = ServerState.getInstance().getChatRoomFromAll(former);
-			// Room has not been deleted
+			// broadcast to the client in the old room
 			for (ClientConnection oldRoomClient : former.getConnectedClients()) {
 				oldRoomClient.getMessageQueue().add(new Message(false, leaverMsg.toJSONString()));
 			}
+			// remove client from the old chat room
 			former.clientLeave(clientConnection);
 
-			//ChatRoom newChatRoom = ServerState.getInstance().getChatRoomFromAll(newRoom);
+			// broadcast to client in new room
 			for (ClientConnection newRoomClient : newRoom.getConnectedClients()) {
 				newRoomClient.getMessageQueue().add(new Message(false, leaverMsg.toJSONString()));
 			}
+			// put client into the new chat room
 			newRoom.clientJoin(clientConnection);
+			// also cache the chatroom object in clientconnection
 			clientConnection.currentRoom = newRoom;
 			System.out.println(clientConnection.clientID + " join " + newRoom.getRoomName());
 		}

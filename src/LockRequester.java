@@ -33,15 +33,16 @@ public class LockRequester extends Thread {
 		try {
 			String address = ServerState.getInstance().getServerAddrMap().get(serverID);
 
-			// make sure no other thread is accessing the result
+			// make sure no other thread is accessing the Result object
 			synchronized (result) {
-
+				// create connection to the server
 				Socket socket = new Socket(InetAddress.getByName(address), serverPort);
 
 				System.out.println(getName() + " - connected to " + serverID+ "::" + socket.getRemoteSocketAddress());
 				BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 				BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+				// send request to the server
 				writer.write(request + "\n");
 				System.out.println(getName() + " - request sent to " + serverID+ "::" + socket.getRemoteSocketAddress());
 				writer.flush();
@@ -53,12 +54,13 @@ public class LockRequester extends Thread {
 					JSONObject responseJSON = (JSONObject) new JSONParser().parse(response);
 
 					String locked = (String) responseJSON.get(JSONTag.LOCKED);
+					// put response to the Result object
 					if (locked.matches(JSONTag.TRUE))
 						result.canLocked = true;
 					else
 						result.canLocked = false;
-
 					result.requestDone = true;
+					// release the Result object
 					result.notify();
 
 					break;

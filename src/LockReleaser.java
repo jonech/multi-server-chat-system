@@ -30,15 +30,17 @@ public class LockReleaser implements Runnable {
 		String address = ServerState.getInstance().getServerAddrMap().get(serverID);
 
 		try {
+			// create connection to server
 			Socket socket = new Socket(InetAddress.getByName(address), port);
 
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
+			// send RELEASE request to server
 			writer.write(request + "\n");
 			System.out.println("release request sent to " + serverID+ "::"+ socket.getRemoteSocketAddress());
 			writer.flush();
 
-
+			// don't have to wait for anything, can disconnect immediately
 			socket.close();
 		}
 		catch (IOException e) {
