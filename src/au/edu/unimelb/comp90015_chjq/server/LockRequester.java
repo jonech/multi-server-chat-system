@@ -4,6 +4,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -30,6 +31,7 @@ public class LockRequester extends Thread {
 
 	@Override
 	public void run() {
+		
 		try {
 			String address = ServerState.getInstance().getServerAddrMap().get(serverID);
 
@@ -37,7 +39,8 @@ public class LockRequester extends Thread {
 			synchronized (result) {
 				// create connection to the server
 				Socket socket = new Socket(InetAddress.getByName(address), serverPort);
-
+				//Socket socket = SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(address), serverPort);
+				
 				System.out.println(getName() + " - connected to " + serverID+ "::" + socket.getRemoteSocketAddress());
 				BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 				BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));

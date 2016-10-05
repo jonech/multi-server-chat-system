@@ -2,6 +2,7 @@ package au.edu.unimelb.comp90015_chjq.server;
 
 import org.json.simple.JSONObject;
 
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -31,11 +32,17 @@ public class ChatServer extends Thread {
 
 	public ChatServer(String serverID, String serverAddress, int clientPort, int coordPort) throws IOException
 	{
+		// set keystore
+		System.setProperty("javax.net.ssl.keyStore", "chjq-keystore");
+		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
+		
 		this.serverID = serverID;
 		this.coordPort = coordPort;
 		// create socket for clients port
-		listeningSocket = new ServerSocket(clientPort, 10, InetAddress.getByName(serverAddress));
-
+		//listeningSocket = new ServerSocket(clientPort, 10, InetAddress.getByName(serverAddress));
+		listeningSocket = SSLServerSocketFactory.getDefault().createServerSocket(
+							clientPort, 10, InetAddress.getByName(serverAddress));
+		
 		roomList = new ArrayList<>();
 		localClientIDList = new ArrayList<>();
 		lockedRoomID = new HashMap<>();
