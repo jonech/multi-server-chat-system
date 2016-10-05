@@ -8,11 +8,17 @@ import org.json.simple.parser.ParseException;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
+import javax.net.ssl.SSLSocketFactory;
+
 public class Client {
 
 	public static void main(String[] args) throws IOException, ParseException {
 		Socket socket = null;
 		String identity = null;
+		
+		// set keystore
+		System.setProperty("javax.net.ssl.trustStore", "chjq-keystore");
+		
 		boolean debug = false;
 		try {
 			//load command line args
@@ -24,7 +30,9 @@ public class Client {
 				identity = values.getIdeneity();
 				int port = values.getPort();
 				debug = values.isDebug();
-				socket = new Socket(hostname, port);
+				//socket = new Socket(hostname, port);
+				socket = SSLSocketFactory.getDefault().createSocket(hostname, port);
+				
 			} catch (CmdLineException e) {
 				e.printStackTrace();
 			}
