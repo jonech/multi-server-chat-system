@@ -172,5 +172,23 @@ public class ServerState {
 			clientConnection.getMessageQueue().add(new Message(false, leaverMsg.toJSONString()));
 		}
 	}
+	
+	/**
+	 * Remove the given server from all server's mapping
+	 * @param serverID
+	 */
+	public synchronized void removeServer(String serverID)
+	{
+		serverAddrMap.remove(serverID);
+		serverPortMap.remove(serverID);
+		serverObjectMap.remove(serverID);
+		
+		// find the MainHall of the server and remove
+		for (ChatRoom mainhall : globalRoomList) {
+			if (mainhall.server.equals(serverID)) {
+				globalRoomList.remove(mainhall);
+			}
+		}
+	}
 
 }

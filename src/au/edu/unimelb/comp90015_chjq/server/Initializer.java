@@ -53,8 +53,14 @@ public class Initializer {
 				int client_port = Integer.parseInt(temp.get(CLIENT_PORT_INDEX));
 				int coord_port = Integer.parseInt(temp.get(COORD_PORT_INDEX));
 
-				// create and start the server thread
+				// create server
 				ChatServer server = new ChatServer(server_id, server_addr, client_port, coord_port);
+				
+				// cache up the server information to server state
+				ServerState.getInstance().createGlobalChatRoom(server_id, "MainHall-"+server_id, "SERVER-"+server_id);
+				ServerState.getInstance().serverConnected(server_id, server, server_addr, coord_port);
+				
+				// start server
 				server.start();
 			}
 
