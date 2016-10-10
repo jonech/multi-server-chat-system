@@ -1,3 +1,0 @@
-s1	localhost	1234	4455
-s2	localhost	1235	4432
-s3	localhost	1236	5000

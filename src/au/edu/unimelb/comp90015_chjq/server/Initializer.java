@@ -18,7 +18,8 @@ public class Initializer {
 	public static int SERVER_ADDR_INDEX = 1;
 	public static int CLIENT_PORT_INDEX = 2;
 	public static int COORD_PORT_INDEX = 3;
-
+	public static int LOCATION_INDEX = 4;
+	
 	public static void main(String args[]) throws CmdLineException {
 
 		// initialize command line argument parser
@@ -41,7 +42,7 @@ public class Initializer {
 
 			String line = null;
 			while ((line = reader.readLine()) != null) {
-
+				
 				// put the input line into array list
 				ArrayList<String> temp = new ArrayList<>();
 				for (String word : line.split("\t")) {
@@ -52,16 +53,28 @@ public class Initializer {
 				String server_id = temp.get(SERVER_ID_INDEX);
 				int client_port = Integer.parseInt(temp.get(CLIENT_PORT_INDEX));
 				int coord_port = Integer.parseInt(temp.get(COORD_PORT_INDEX));
-
-				// create server
-				ChatServer server = new ChatServer(server_id, server_addr, client_port, coord_port);
+				String location = temp.get(LOCATION_INDEX);
 				
-				// cache up the server information to server state
-				ServerState.getInstance().createGlobalChatRoom(server_id, "MainHall-"+server_id, "SERVER-"+server_id);
-				ServerState.getInstance().serverConnected(server_id, server, server_addr, coord_port);
+				// create chat server if its local
+				if (location.equals("local")) {
+					// create server
+					ChatServer server = new ChatServer(server_id, server_addr, client_port, coord_port);
+					
+					// cache up the server information to server state
+					ServerState.getInstance().createGlobalChatRoom(server_id, "MainHall-"+server_id, "SERVER-"+server_id);
+					ServerState.getInstance().addLocalServer(server_id, server, server_addr, coord_port);
+					
+					// start server
+					server.start();
+				}
+				else {
+					ServerState.getInstance().addRemoteServer(server_id, server_addr, coord_port);
+				}
 				
-				// start server
-				server.start();
+				for (ChatServer server : ServerState.getInstance().getAllServerObject()) {
+					//server;
+				}
+				
 			}
 
 			reader.close();

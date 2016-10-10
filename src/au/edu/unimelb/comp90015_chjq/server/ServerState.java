@@ -16,17 +16,20 @@ public class ServerState {
 	// cache up all the ChatServer
 	private HashMap<String, ChatServer> serverObjectMap;
 	// all the coordination port of the ChatServer
-	private HashMap<String, Integer> serverPortMap;
+	//private HashMap<String, Integer> serverPortMap;
 	// all the server address for the Chat Server
-	private HashMap<String, String> serverAddrMap;
+	//private HashMap<String, String> serverAddrMap;
+	
+	// for server's information
+	private HashMap<String, ChatServerInfo> serverInfoMap;
+	
 	// all the Main-Hall
 	private List<ChatRoom> globalRoomList;
 
 	private ServerState() {
 		globalRoomList = new ArrayList<>();
-		serverPortMap = new HashMap<>();
 		serverObjectMap = new HashMap<>();
-		serverAddrMap = new HashMap<>();
+		serverInfoMap = new HashMap<>();
 	}
 
 	public static synchronized ServerState getInstance() {
@@ -38,20 +41,16 @@ public class ServerState {
 
 	/* get a list of Main-Hall */
 	public synchronized List<ChatRoom> getGlobalRooms() { return globalRoomList; }
-
-	/* get the HashMap for server port */
-	public synchronized HashMap<String, Integer> getServerPortMap() {
-		return serverPortMap;
-	}
-
-	/* get the HashMap for server address */
-	public synchronized HashMap<String, String> getServerAddrMap() {
-		return serverAddrMap;
-	}
-
+	
+	/* get HashMap for server info */
+	public synchronized HashMap<String, ChatServerInfo> getServerInfoMap() { return serverInfoMap; }
+	
 	/* get the ChatServer object */
 	public synchronized ChatServer getServerObject(String serverID) { return serverObjectMap.get(serverID); }
-
+	
+	/* check if server id existed */
+	public synchronized boolean hasServer(String serverID) { return serverObjectMap.containsKey(serverID); }
+	
 	/* get ALL ChatServer object */
 	public synchronized List<ChatServer> getAllServerObject() {
 		List<ChatServer> allServers = new ArrayList<>();
@@ -68,13 +67,23 @@ public class ServerState {
 	}
 
 	/* cache up the ChatServer details (coordination port, address, id) */
-	public synchronized void serverConnected(String serverID, ChatServer server, String address, int port) {
+	public synchronized void addLocalServer(String serverID, ChatServer server, String address, int port) {
 		System.out.println("cached: " + serverID + " "+port);
-		serverPortMap.put(serverID, port);
-		serverAddrMap.put(serverID, address);
+		
+		serverInfoMap.put(serverID, new ChatServerInfo(serverID, address, Integer.toString(port), true));
 		serverObjectMap.put(serverID, server);
 	}
-
+	
+	public synchronized void addRemoteServer(String serverID, String address, int port)
+	{
+		// only add if the remote server does not exist
+		if (!serverInfoMap.containsKey(serverID)) {
+			System.out.println(serverID + " is added!");
+			serverInfoMap.put(serverID, new ChatServerInfo(serverID, address, Integer.toString(port), false));
+		}
+			
+	}
+	
 	/* get ALL Local Chat Room and Main-Hall */
 	public synchronized List<ChatRoom> getAllGlobalLocalChatRoom()
 	{
@@ -179,8 +188,6 @@ public class ServerState {
 	 */
 	public synchronized void removeServer(String serverID)
 	{
-		serverAddrMap.remove(serverID);
-		serverPortMap.remove(serverID);
 		serverObjectMap.remove(serverID);
 		
 		// find the MainHall of the server and remove
@@ -190,5 +197,28 @@ public class ServerState {
 			}
 		}
 	}
-
+	
+	/**
+	 * Broadcast a short connection message to all server
+	 * @param serverID Server that creates the broadcast
+	 * @param broadcast message
+	 */
+	public synchronized void broadcastShortRemoteServer(String serverID, String broadcast)
+	{
+		// broadcast to all servers
+		for (HashMap.Entry<String, ChatServerInfo> entry : ServerState.getInstance().getServerInfoMap().entrySet()) {
+			// skip if it loops to the ChatServer itself or local servers
+			if (entry.getKey().matches(serverID) || entry.getValue().isLocal)
+				continue;
+			
+			String requestServerID = entry.getKey();
+			int requestPort = Integer.parseInt(entry.getValue().port);
+			String requestAddress = entry.getValue().address;
+			
+			ShortSender send = new ShortSender(requestServerID, requestAddress, requestPort, broadcast);
+			new Thread(send).start();
+		}
+		
+	}
+	
 }

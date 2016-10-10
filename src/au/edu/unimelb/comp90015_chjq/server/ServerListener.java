@@ -20,14 +20,14 @@ public class ServerListener extends Thread {
 	private String serverID;
 	private ChatServer serverObject;
 
-	public ServerListener(String serverID, int coordinationPort, ChatServer server)
+	public ServerListener(String serverID, String address, int coordinationPort, ChatServer server)
 	{
 		try {
 
 			this.serverID = serverID;
 			this.serverObject = server;
 
-			String address = ServerState.getInstance().getServerAddrMap().get(serverID);
+			//String address = ServerState.getInstance().getServerAddrMap().get(serverID);
 
 			listeningSocket = new ServerSocket(coordinationPort, 10, InetAddress.getByName(address));
 
@@ -125,7 +125,19 @@ public class ServerListener extends Thread {
 					}
 					responseJSON = null;
 				}
-
+				
+				/* server self-introduce NEWSERVERID */
+				else if (requestType.matches(JSONTag.NEWSERVERID)) {
+					String newServerID = (String) requestJSON.get(JSONTag.SERVERID);
+					String host = (String) requestJSON.get(JSONTag.HOST);
+					String port = (String) requestJSON.get(JSONTag.PORT);
+					
+					// if server does not exist, add it
+					ServerState.getInstance().addRemoteServer(newServerID, host, Integer.parseInt(port));
+					responseJSON = null;
+				}
+				
+				
 				// don't bother writing to the connected server if there is nothing to write
 				if (responseJSON != null) {
 					writer.write(responseJSON.toJSONString() + "\n");

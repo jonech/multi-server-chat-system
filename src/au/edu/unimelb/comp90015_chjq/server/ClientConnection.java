@@ -105,7 +105,8 @@ public class ClientConnection extends Thread {
 							msgForThreads = new Message(false, broadcastJSON.toJSONString());
 						}
 					}
-
+					
+					//TODO: re-implement LIST
 					/* client request room LIST */
 					else if (requestType.equals(JSONTag.LIST)) {
 						JSONObject response = new JSONObject();
@@ -167,6 +168,7 @@ public class ClientConnection extends Thread {
 								break;
 							}
 							// client requested to join a chat room from other server
+							//TODO: re-implement joining a remote server
 							else if (room.getRoomName().equals(newRoomID) && !room.server.equals(this.serverID)) {
 								routeClient(ServerState.getInstance().getServerObject(room.server), newRoomID);
 								joinSuccess = true;
