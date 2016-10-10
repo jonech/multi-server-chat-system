@@ -14,7 +14,8 @@ import java.util.List;
 /**
  * Created by jonech on 8/09/2016.
  */
-public class ChatServer extends Thread {
+public class ChatServer extends Thread
+{
 
 	public ServerSocket listeningSocket;
 	public String serverID;
@@ -124,7 +125,8 @@ public class ChatServer extends Thread {
 	 *  @param roomName = The chat room name that the client wants.
 	 *  @param owner = the client's id that requested to create room (automatically become the owner)
 	 */
-	public synchronized boolean requestCreateChatRoom(String server, String roomName, String owner) throws InterruptedException {
+	public synchronized boolean requestCreateChatRoom(String server, String roomName, String owner) throws InterruptedException
+	{
 		boolean chatRoomApproved = true;
 
 		// stop room creation if existing room name in local room
@@ -151,7 +153,13 @@ public class ChatServer extends Thread {
 			// skip if it loops to the ChatServer itself
 			if (entry.getKey().matches(serverID))
 				continue;
-			LockRequester t = new LockRequester(entry.getKey(), entry.getValue(), broadcast);
+			
+			String requestServerID = entry.getKey();
+			int requestPort = entry.getValue();
+			String requestAddress = ServerState.getInstance().getServerAddrMap().get(requestServerID);
+			
+			//LockRequester t = new LockRequester(entry.getKey(), entry.getValue(), broadcast);
+			LockRequester t = new LockRequester(requestServerID, requestAddress, requestPort, broadcast);
 			t.start();
 			threads.add(t);
 		}
@@ -182,7 +190,13 @@ public class ChatServer extends Thread {
 		for (HashMap.Entry<String, Integer> entry : ServerState.getInstance().getServerPortMap().entrySet()) {
 			if (entry.getKey().matches(serverID))
 				continue;
-			LockReleaser releaser = new LockReleaser(entry.getKey(), entry.getValue(), releaseJSON.toJSONString());
+			
+			String requestServerID = entry.getKey();
+			int requestPort = entry.getValue();
+			String requestAddress = ServerState.getInstance().getServerAddrMap().get(requestServerID);
+			
+			//LockReleaser releaser = new LockReleaser(entry.getKey(), entry.getValue(), releaseJSON.toJSONString());
+			LockReleaser releaser = new LockReleaser(requestServerID, requestAddress, requestPort, broadcast);
 			Thread t = new Thread(releaser);
 			t.start();
 		}
@@ -204,8 +218,8 @@ public class ChatServer extends Thread {
 	 * Called by ClientConnection when client request NEWIDENTITY
 	 * @param clientID = the clientID that the client wants to use
 	 */
-	public synchronized boolean requestJoinServer(String clientID) throws InterruptedException {
-
+	public synchronized boolean requestJoinServer(String clientID) throws InterruptedException
+	{
 		// assume it is true first
 		boolean clientIDApproved = true;
 
@@ -224,10 +238,17 @@ public class ChatServer extends Thread {
 		// create a thread to send a LOCKIDENTITY request to other server
 		List<LockRequester> threads = new ArrayList<>();
 		for (HashMap.Entry<String, Integer> entry : ServerState.getInstance().getServerPortMap().entrySet()) {
+			
 			if (entry.getKey().matches(serverID))
 				continue;
-			LockRequester t = new LockRequester(entry.getKey(), entry.getValue(), broadcast);
-			t.setName(serverID);
+			
+			String requestServerID = entry.getKey();
+			int requestPort = entry.getValue();
+			String requestAddress = ServerState.getInstance().getServerAddrMap().get(requestServerID);
+			
+			//LockRequester t = new LockRequester(entry.getKey(), entry.getValue(), broadcast);
+			LockRequester t = new LockRequester(requestServerID, requestAddress, requestPort, broadcast);
+			
 			t.start();
 			threads.add(t);
 		}
@@ -258,7 +279,12 @@ public class ChatServer extends Thread {
 		for (HashMap.Entry<String, Integer> entry : ServerState.getInstance().getServerPortMap().entrySet()) {
 			if (entry.getKey().matches(serverID))
 				continue;
-			LockReleaser releaser = new LockReleaser(entry.getKey(), entry.getValue(), releaseJSON.toJSONString());
+			
+			String requestServerID = entry.getKey();
+			int requestPort = entry.getValue();
+			String requestAddress = ServerState.getInstance().getServerAddrMap().get(requestServerID);
+			
+			LockReleaser releaser = new LockReleaser(requestServerID, requestAddress, requestPort, releaseJSON.toJSONString());
 			Thread t = new Thread(releaser);
 			t.start();
 		}
@@ -274,5 +300,16 @@ public class ChatServer extends Thread {
 		}
 
 	}
+	
+	public synchronized void selfIntroduce()
+	{
+		// JSON broadcast for introduction
+		JSONObject broadcastJSON = new JSONObject();
+		broadcastJSON.put(JSONTag.TYPE, JSONTag.NEWSERVERID);
+		broadcastJSON.put(JSONTag.IDENTITY, this.serverID);
+		broadcastJSON.put(JSONTag.HOST, listeningSocket.getInetAddress().getHostAddress());
+		broadcastJSON.put(JSONTag.PORT, coordPort);
+	}
+	
 
 }

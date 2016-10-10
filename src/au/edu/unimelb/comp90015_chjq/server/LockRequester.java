@@ -17,14 +17,16 @@ import java.net.Socket;
 public class LockRequester extends Thread {
 
 	public int serverPort;
+	public String serverAddress;
 	public String serverID;
 	public String request;
 
 	public RequesterResult result = new RequesterResult();
 
-	public LockRequester(String serverID, int port, String request)
+	public LockRequester(String serverID, String serverAddress, int port, String request)
 	{
 		serverPort = port;
+		this.serverAddress = serverAddress;
 		this.serverID = serverID;
 		this.request = request;
 	}
@@ -33,8 +35,9 @@ public class LockRequester extends Thread {
 	public void run() {
 		
 		try {
-			String address = ServerState.getInstance().getServerAddrMap().get(serverID);
-
+			//String address = ServerState.getInstance().getServerAddrMap().get(serverID);
+			String address = serverAddress;
+			
 			// make sure no other thread is accessing the Result object
 			synchronized (result) {
 				// create connection to the server

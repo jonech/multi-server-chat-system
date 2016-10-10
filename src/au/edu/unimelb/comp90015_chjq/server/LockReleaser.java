@@ -12,14 +12,16 @@ import java.net.Socket;
  * The lock can be for identity or roomID
  * Only depends on the json request string
  */
-public class LockReleaser implements Runnable {
-
+public class LockReleaser implements Runnable
+{
+	String serverAddress;
 	String serverID;
 	int port;
 	String request;
 
-	public LockReleaser(String serverID, int port, String request)
+	public LockReleaser(String serverID, String serverAddress, int port, String request)
 	{
+		this.serverAddress = serverAddress;
 		this.serverID = serverID;
 		this.port = port;
 		this.request = request;
@@ -28,8 +30,9 @@ public class LockReleaser implements Runnable {
 	@Override
 	public void run()
 	{
-		String address = ServerState.getInstance().getServerAddrMap().get(serverID);
-
+		//String address = ServerState.getInstance().getServerAddrMap().get(serverID);
+		String address = serverAddress;
+		
 		try {
 			// create connection to server
 			Socket socket = new Socket(InetAddress.getByName(address), port);

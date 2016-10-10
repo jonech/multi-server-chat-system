@@ -44,5 +44,9 @@ public class JSONTag {
 
 	public static final String HOST = "host";
 	public static final String PORT = "port";
+	
+	
+	// server self introduce
+	public static final String NEWSERVERID = "newserverid";
 
 }
