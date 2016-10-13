@@ -79,6 +79,7 @@ public class ClientConnection extends Thread {
 
 					/* Client Request LOGIN */
 					if(requestType.equals(JSONTag.LOGIN)){
+
 						try{
 							Socket socket = SSLSocketFactory.getDefault().createSocket(ServerState.authServerAddr, ServerState.authServerPort);
 
@@ -91,7 +92,8 @@ public class ClientConnection extends Thread {
 
 
 						}catch (IOException e) {
-							e.printStackTrace();
+							//e.printStackTrace();
+
 						}
 
 
