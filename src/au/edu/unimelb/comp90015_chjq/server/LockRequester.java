@@ -41,8 +41,8 @@ public class LockRequester extends Thread {
 			// make sure no other thread is accessing the Result object
 			synchronized (result) {
 				// create connection to the server
-				Socket socket = new Socket(InetAddress.getByName(address), serverPort);
-				//Socket socket = SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(address), serverPort);
+				//Socket socket = new Socket(InetAddress.getByName(address), serverPort);
+				Socket socket = SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(address), serverPort);
 				
 				System.out.println(getName() + " - connected to " + serverID+ "::" + socket.getRemoteSocketAddress());
 				BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));

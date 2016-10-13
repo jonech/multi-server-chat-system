@@ -35,8 +35,8 @@ public class LockReleaser implements Runnable
 		
 		try {
 			// create connection to server
-			Socket socket = new Socket(InetAddress.getByName(address), port);
-			//Socket socket = SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(address), port);
+			//Socket socket = new Socket(InetAddress.getByName(address), port);
+			Socket socket = SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(address), port);
 
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 

@@ -1,5 +1,6 @@
 package au.edu.unimelb.comp90015_chjq.server;
 
+import javax.net.ssl.SSLSocketFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -31,8 +32,10 @@ public class ShortSender implements Runnable
 		
 		try {
 			// create connection to server
-			Socket socket = new Socket(InetAddress.getByName(address), port);
-
+			//Socket socket = new Socket(InetAddress.getByName(address), port);
+			Socket socket = SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(address), port);
+			
+			
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			
 			// send request to server

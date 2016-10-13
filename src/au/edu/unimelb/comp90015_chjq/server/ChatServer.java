@@ -37,6 +37,7 @@ public class ChatServer extends Thread
 		// set keystore
 		System.setProperty("javax.net.ssl.keyStore", "chjq-keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
+		System.setProperty("javax.net.ssl.trustStore", "chjq-keystore");
 		
 		this.serverID = serverID;
 		this.serverAddress = serverAddress;

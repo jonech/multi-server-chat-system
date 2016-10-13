@@ -4,6 +4,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -29,8 +30,9 @@ public class ServerListener extends Thread {
 
 			//String address = ServerState.getInstance().getServerAddrMap().get(serverID);
 
-			listeningSocket = new ServerSocket(coordinationPort, 10, InetAddress.getByName(address));
-
+			//listeningSocket = new ServerSocket(coordinationPort, 10, InetAddress.getByName(address));
+			listeningSocket = SSLServerSocketFactory.getDefault().createServerSocket(
+					coordinationPort, 10, InetAddress.getByName(address));
 		}
 
 		catch (IOException e) {
