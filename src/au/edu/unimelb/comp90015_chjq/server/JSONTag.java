@@ -49,4 +49,12 @@ public class JSONTag {
 	// server self introduce
 	public static final String NEWSERVERID = "newserverid";
 
+	//user login
+	public static final String LOGIN= "login";
+	public static final String PASSWORD = "password";
+	public static final String ACCOUNT = "account";
+	public static final String ACCESSTOKEN="accessToken";
+	public static final String USERNAME = "username";
+
+
 }

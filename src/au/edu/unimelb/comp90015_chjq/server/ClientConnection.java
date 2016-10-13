@@ -5,6 +5,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
@@ -72,8 +73,31 @@ public class ClientConnection extends Thread {
 					// anything that assign as this object will be put into the message queue of other ClientConnection
 					Message msgForThreads = null;
 
-					JSONObject messageJSONObj = (JSONObject) parser.parse(message.getMessage());
+					String msg = message.getMessage();
+					JSONObject messageJSONObj = (JSONObject) parser.parse(msg);
 					String requestType = (String) messageJSONObj.get(JSONTag.TYPE);
+
+					/* Client Request LOGIN */
+					if(requestType.equals(JSONTag.LOGIN)){
+						try{
+							Socket socket = SSLSocketFactory.getDefault().createSocket(ServerState.authServerAddr, ServerState.authServerPort);
+
+							BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+							BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+							writer.write(msg+"\n");
+							writer.flush();
+							String result = reader.readLine();
+							write(result);
+
+
+						}catch (IOException e) {
+							e.printStackTrace();
+						}
+
+
+
+
+					}
 
 					/* Client Request NEWIDENTITY */
 					if (requestType.equals(JSONTag.NEWIDENTITY)) {
