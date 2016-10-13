@@ -1,5 +1,6 @@
-s1	localhost	1234	4455	remote
-s2	localhost	1235	4432	remote
-s3	localhost	1236	5000	remote
-d1	localhost	4321	5300	local
-d2	localhost	4322	5301	local
+s1	localhost	1234	4455	remote  chatserver
+s2	localhost	1235	4432	remote  chatserver
+s3	localhost	1236	5000	remote  chatserver
+d1	localhost	4321	5300	local   chatserver
+d2	localhost	4322	5301	local   chatserver
+auth    localhost   9999    5400    remote  authserver
