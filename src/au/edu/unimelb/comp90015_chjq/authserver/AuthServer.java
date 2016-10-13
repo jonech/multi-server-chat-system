@@ -109,6 +109,8 @@ public class AuthServer{
             while(true){
                 SSLSocket socket = (SSLSocket)listeningSocket.accept();
 
+                System.out.print(socket.getRemoteSocketAddress());
+
                 InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
                 BufferedReader reader = new BufferedReader(inputStreamReader);
 

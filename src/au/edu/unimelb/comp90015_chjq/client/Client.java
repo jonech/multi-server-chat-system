@@ -1,8 +1,6 @@
 package au.edu.unimelb.comp90015_chjq.client;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -95,6 +93,12 @@ public class Client {
 
 				accountInfo = new AccountInfo(account, password, null);
 			}
+
+			String sendToServer = ClientMessages.getLoginRequest(account, password, null).toJSONString();
+			BufferedWriter w = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			System.out.println(sendToServer);
+			w.write(sendToServer + "\n");
+			w.flush();
 
 			// start sending thread
 			MessageSendThread messageSendThread = new MessageSendThread(socket, state, debug, accountInfo);
