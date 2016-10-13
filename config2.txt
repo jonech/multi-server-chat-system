@@ -3,4 +3,4 @@ s2	localhost	1235	4432	remote  chatserver
 s3	localhost	1236	5000	remote  chatserver
 d1	localhost	4321	5300	local   chatserver
 d2	localhost	4322	5301	local   chatserver
-auth    localhost   9999    5400    remote  authserver
+auth    localhost	9999    5400    remote  authserver

@@ -56,15 +56,18 @@ public class AuthServer{
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    String[] result = line.split(" ");
+                    String[] result = line.split("\t");
+
                     if (!(result[0].equals(serverid))) {
                         //serverInfos.put(result[0], new ServerInfo(result[0], result[1], Integer.parseInt(result[2]), Integer.parseInt(result[3])));
                         System.out.println("server info: " + line);
                     }
                     else{
                         //myServerInfo = new ServerInfo(result[0], result[1], Integer.parseInt(result[2]), Integer.parseInt(result[3]));
+
                         authServer.coordPort = Integer.parseInt(result[3]);
                         authServer.serverAddr = result[1];
+
                     }
                 }
                 System.out.println("MyserverID:"+ authServer.serverID+
