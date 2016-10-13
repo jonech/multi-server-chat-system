@@ -1,12 +1,5 @@
 package au.edu.unimelb.comp90015_chjq.client;
 
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.List;
-
-/**
- * Created by alw on 2016/10/13.
- */
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -19,6 +12,14 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.oauth2.Oauth2;
+
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Created by alw on 2016/10/13.
+ */
 
 public class OAuth2Verify {
     /**
