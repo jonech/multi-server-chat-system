@@ -28,10 +28,10 @@ public class ChatRoom {
 		this.server = server;
 		this.roomName = roomName;
 		this.owner = owner;
-		clientList = new ArrayList<>();
+		clientList = new ArrayList<String>();
 		clientList.add(owner);
 
-		clients = new ArrayList<>();
+		clients = new ArrayList<ClientConnection>();
 	}
 
 	public String getRoomName() {

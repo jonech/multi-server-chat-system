@@ -27,9 +27,9 @@ public class ServerState {
 	private List<ChatRoom> globalRoomList;
 
 	private ServerState() {
-		globalRoomList = new ArrayList<>();
-		serverObjectMap = new HashMap<>();
-		serverInfoMap = new HashMap<>();
+		globalRoomList = new ArrayList<ChatRoom>();
+		serverObjectMap = new HashMap<String, ChatServer>();
+		serverInfoMap = new HashMap<String, ChatServerInfo>();
 	}
 
 	public static synchronized ServerState getInstance() {
@@ -53,7 +53,7 @@ public class ServerState {
 	
 	/* get ALL ChatServer object */
 	public synchronized List<ChatServer> getAllServerObject() {
-		List<ChatServer> allServers = new ArrayList<>();
+		List<ChatServer> allServers = new ArrayList<ChatServer>();
 		for (HashMap.Entry<String, ChatServer> severObject : serverObjectMap.entrySet()) {
 			allServers.add(severObject.getValue());
 		}
@@ -87,7 +87,7 @@ public class ServerState {
 	/* get ALL Local Chat Room and Main-Hall */
 	public synchronized List<ChatRoom> getAllGlobalLocalChatRoom()
 	{
-		List<ChatRoom> allRooms = new ArrayList<>();
+		List<ChatRoom> allRooms = new ArrayList<ChatRoom>();
 
 		for (ChatRoom globalRoom : getGlobalRooms()) {
 			allRooms.add(globalRoom);

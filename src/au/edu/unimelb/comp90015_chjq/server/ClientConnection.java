@@ -37,7 +37,7 @@ public class ClientConnection extends Thread {
 
 			writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF8"));
 			reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF8"));
-			messageQueue = new LinkedBlockingQueue<>();
+			messageQueue = new LinkedBlockingQueue<Message>();
 		}
 		catch (IOException e) {
 			e.printStackTrace();

@@ -44,7 +44,7 @@ public class Initializer {
 			while ((line = reader.readLine()) != null) {
 				
 				// put the input line into array list
-				ArrayList<String> temp = new ArrayList<>();
+				ArrayList<String> temp = new ArrayList<String>();
 				for (String word : line.split("\t")) {
 					temp.add(word);
 				}
