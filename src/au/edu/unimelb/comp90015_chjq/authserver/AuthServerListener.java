@@ -41,6 +41,8 @@ public class AuthServerListener extends Thread {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             String request= reader.readLine();
+
+            System.out.println(request);
 //            while((request= reader.readLine())!=null){
                 JSONObject requestJSON = (JSONObject) new JSONParser().parse(request);
                 String requestType = (String) requestJSON.get(JSONTag.TYPE);
@@ -55,7 +57,8 @@ public class AuthServerListener extends Thread {
                     responseJSON.put(JSONTag.TYPE, JSONTag.LOGIN);
 
                     //use password and account
-                    if(accessToken.length() < 6){
+                    if(accessToken.length() < 10){
+                        System.out.println("username login");
                         String approved = serverObject.verifyAccount(account, password);
                         responseJSON.put(JSONTag.APPROVED, approved);
                         responseJSON.put(JSONTag.USERNAME, account);

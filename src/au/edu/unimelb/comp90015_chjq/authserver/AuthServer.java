@@ -101,7 +101,7 @@ public class AuthServer{
 
         try {
             parser = new JSONParser();
-            map = new HashMap<String, String>();
+
 
             //System.out.println(serverID + " - " +currentThread() + " listening to client on port "+ listeningSocket.getLocalSocketAddress());
 
@@ -168,6 +168,8 @@ public class AuthServer{
     }
 
     public String verifyAccount(String account, String password){
+        System.out.println(account+" "+password);
+        System.out.println(map.get(account));
         if(password.equals(map.get(account))){
             return JSONTag.TRUE;
         }
