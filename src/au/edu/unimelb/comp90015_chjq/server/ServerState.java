@@ -24,10 +24,10 @@ public class ServerState {
 	private HashMap<String, ChatServerInfo> serverInfoMap;
 	
 	// all the Main-Hall
-	private List<ChatRoom> globalRoomList;
+	//private List<ChatRoom> globalRoomList;
 
 	private ServerState() {
-		globalRoomList = new ArrayList<>();
+		//globalRoomList = new ArrayList<>();
 		serverObjectMap = new HashMap<>();
 		serverInfoMap = new HashMap<>();
 	}
@@ -40,7 +40,7 @@ public class ServerState {
 	}
 
 	/* get a list of Main-Hall */
-	public synchronized List<ChatRoom> getGlobalRooms() { return globalRoomList; }
+	//public synchronized List<ChatRoom> getGlobalRooms() { return globalRoomList; }
 	
 	/* get HashMap for server info */
 	public synchronized HashMap<String, ChatServerInfo> getServerInfoMap() { return serverInfoMap; }
@@ -61,10 +61,10 @@ public class ServerState {
 	}
 
 	/* create a Main-Hall, called when ChatServer is created */
-	public synchronized void createGlobalChatRoom(String server, String roomName, String owner) {
-		ChatRoom room = new ChatRoom(server, roomName, owner);
-		globalRoomList.add(room);
-	}
+	//public synchronized void createGlobalChatRoom(String server, String roomName, String owner) {
+	//	ChatRoom room = new ChatRoom(server, roomName, owner);
+	//	globalRoomList.add(room);
+	//}
 
 	/* cache up the ChatServer details (coordination port, address, id) */
 	public synchronized void addLocalServer(String serverID, ChatServer server, String address, int port) {
@@ -88,11 +88,11 @@ public class ServerState {
 	public synchronized List<ChatRoom> getAllGlobalLocalChatRoom()
 	{
 		List<ChatRoom> allRooms = new ArrayList<>();
-
-		for (ChatRoom globalRoom : getGlobalRooms()) {
-			allRooms.add(globalRoom);
-		}
+		
 		for (ChatServer server : getAllServerObject()) {
+			// main hall
+			allRooms.add(server.getServerMainHall());
+			// local room
 			for (ChatRoom localRoom : server.getLocalRoomList()) {
 				allRooms.add(localRoom);
 			}
@@ -101,26 +101,24 @@ public class ServerState {
 	}
 
 	/* find the ChatRoom object from all ChatServer, including the Main-Hall */
-	public synchronized ChatRoom getChatRoomFromAll(String roomName)
+	public synchronized ChatRoom findChatRoomFromAll(String roomName)
 	{
-		for (ChatRoom globalRoom : getGlobalRooms()) {
-			if (globalRoom.getRoomName().matches(roomName)) {
-				return globalRoom;
-			}
-		}
-
 		for (ChatServer server : getAllServerObject()) {
+			
+			if (server.getServerMainHall().getRoomName().equals(roomName)) {
+				return server.getServerMainHall();
+			}
 			for (ChatRoom localRoom : server.getLocalRoomList()) {
 				if (localRoom.getRoomName().matches(roomName)) {
 					return localRoom;
 				}
 			}
 		}
-
 		return null;
 	}
 
 	/* client joins into the Main-Hall */
+	/*
 	public synchronized ChatRoom joinGlobalChatRoom(String roomName, ClientConnection client) {
 
 		for (ChatRoom room : globalRoomList) {
@@ -130,9 +128,10 @@ public class ServerState {
 			}
 		}
 		return null;
-	}
+	}*/
 
 	/* get the Main-Hall object */
+	/*
 	public synchronized ChatRoom getServerChatRoom(String server) {
 		for (ChatRoom room : globalRoomList) {
 			if (room.getRoomName().matches((String)"MainHall-" + server)) {
@@ -140,7 +139,7 @@ public class ServerState {
 			}
 		}
 		return null;
-	}
+	}*/
 
 
 	/**
@@ -191,11 +190,12 @@ public class ServerState {
 		serverObjectMap.remove(serverID);
 		
 		// find the MainHall of the server and remove
+		/*
 		for (ChatRoom mainhall : globalRoomList) {
 			if (mainhall.server.equals(serverID)) {
 				globalRoomList.remove(mainhall);
 			}
-		}
+		}*/
 	}
 	
 	/**

@@ -61,7 +61,7 @@ public class Initializer {
 					ChatServer server = new ChatServer(server_id, server_addr, client_port, coord_port);
 					
 					// cache up the server information to server state
-					ServerState.getInstance().createGlobalChatRoom(server_id, "MainHall-"+server_id, "SERVER-"+server_id);
+					//ServerState.getInstance().createGlobalChatRoom(server_id, "MainHall-"+server_id, "SERVER-"+server_id);
 					ServerState.getInstance().addLocalServer(server_id, server, server_addr, coord_port);
 					
 					// start server

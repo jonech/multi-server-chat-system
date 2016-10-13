@@ -63,7 +63,8 @@ public class ClientConnection extends Thread {
 				// client are forced to leave room by thread
 				// this will put client to main hall
 				if (!message.isFromConnection() && message.getMessage().equals("leave_room")) {
-					ServerState.getInstance().safeChangeRoom(currentRoom, ServerState.getInstance().getServerChatRoom(getName()), this);
+					ServerState.getInstance().safeChangeRoom(currentRoom,
+							ServerState.getInstance().getServerObject(getName()).getServerMainHall(), this);
 				}
 
 				if(message.isFromConnection()) {
@@ -92,8 +93,9 @@ public class ClientConnection extends Thread {
 
 						if (joinSuccess) {
 							// put the client to the main hall
-							this.currentRoom = ServerState.getInstance().joinGlobalChatRoom(
-									"MainHall-"+getName(), this);
+							this.currentRoom = ServerState.getInstance().getServerObject(serverID).joinMainHall(this);
+							//this.currentRoom = ServerState.getInstance().joinGlobalChatRoom(
+							//		"MainHall-"+getName(), this);
 
 							// create a broadcast to other client
 							JSONObject broadcastJSON = new JSONObject();
@@ -282,7 +284,7 @@ public class ClientConnection extends Thread {
 		getMessageQueue().add(new Message(false, responseJSON.toJSONString()));
 
 		// find the chat room that the client requested to join
-		ChatRoom newRoom = ServerState.getInstance().getChatRoomFromAll(roomID);
+		ChatRoom newRoom = ServerState.getInstance().findChatRoomFromAll(roomID);
 
 		// put the client into the requested room
 		if (newRoom != null) {
@@ -292,7 +294,7 @@ public class ClientConnection extends Thread {
 		else {
 			// room got destroy before client join
 			// move client to server room
-			ChatRoom serverRoom = ServerState.getInstance().getServerChatRoom(getName());
+			ChatRoom serverRoom = ServerState.getInstance().getServerObject(getName()).getServerMainHall();
 			serverRoom.clientJoin(this);
 			this.currentRoom = serverRoom;
 		}

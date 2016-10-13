@@ -24,21 +24,24 @@ public class ChatServer extends Thread
 
 	// local room list
 	private List<ChatRoom> roomList;
-
+	private ChatRoom serverMainHall;
+	
 	// local clients
 	private List<String> localClientIDList;
 
 	// for lock and request from server
 	public HashMap<String, String> lockedRoomID;
 	public HashMap<String, String> lockedClientID;
-
+	
+	
+	
 	public ChatServer(String serverID, String serverAddress, int clientPort, int coordPort) throws IOException
 	{
 		// set keystore
 		System.setProperty("javax.net.ssl.keyStore", "chjq-keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
 		System.setProperty("javax.net.ssl.trustStore", "chjq-keystore");
-		System.setProperty("javax.net.debug", "all");
+		//System.setProperty("javax.net.debug", "all");
 		
 		this.serverID = serverID;
 		this.serverAddress = serverAddress;
@@ -52,6 +55,9 @@ public class ChatServer extends Thread
 		localClientIDList = new ArrayList<>();
 		lockedRoomID = new HashMap<>();
 		lockedClientID = new HashMap<>();
+		
+		// create a main hall on the server
+		serverMainHall = new ChatRoom(serverID, "MainHall-"+serverID, "SERVER-"+serverID);
 		
 		// create a MainHall Room
 		//ServerState.getInstance().createGlobalChatRoom(serverID, "MainHall-"+serverID, "SERVER-"+serverID);
@@ -118,7 +124,17 @@ public class ChatServer extends Thread
 	public synchronized List<String> getLocalClientIDList() {
 		return localClientIDList;
 	}
-
+	
+	/* get the main hall */
+	public synchronized ChatRoom getServerMainHall() { return serverMainHall; }
+	
+	/* put client into Main Hall */
+	public synchronized ChatRoom joinMainHall(ClientConnection client)
+	{
+		serverMainHall.clientJoin(client);
+		return serverMainHall;
+	}
+	
 	/* find the local chat room object from the server */
 	public synchronized ChatRoom getRoom(String roomName) {
 		for (ChatRoom room : roomList) {
