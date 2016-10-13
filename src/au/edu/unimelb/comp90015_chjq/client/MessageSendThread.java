@@ -48,16 +48,16 @@ public class MessageSendThread implements Runnable {
 			System.exit(1);
 		}
 
-//		while (true) {
-//			String msg = cmdin.nextLine();
-//			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
-//			try {
-//				MessageSend(socket, msg);
-//			} catch (IOException e) {
-//				System.out.println("Communication Error: " + e.getMessage());
-//				System.exit(1);
-//			}
-//		}
+		while (true) {
+			String msg = cmdin.nextLine();
+			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			try {
+				MessageSend(socket, msg);
+			} catch (IOException e) {
+				System.out.println("Communication Error: " + e.getMessage());
+				System.exit(1);
+			}
+		}
 
 	}
 
@@ -121,9 +121,7 @@ public class MessageSendThread implements Runnable {
 		else if(array.length == 4){
 			if(array[0].startsWith("#login")){
 				sendToServer = ClientMessages.getLoginRequest(array[1], array[2], array[3]);
-				BufferedWriter w = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-				w.write(sendToServer + "\n");
-				w.flush();
+				send(sendToServer);
 			}
 		}
 		else {

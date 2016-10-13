@@ -115,12 +115,12 @@ public class AuthServer{
                 BufferedReader reader = new BufferedReader(inputStreamReader);
 
                 //Read input from the client and print it to the screen
-                String msg = null;
-                while ((msg = reader.readLine()) != null) {
-                    System.out.println(msg);
-                }
-                //AuthServerListener listenServer = new AuthServerListener(socket, this.serverID, this);
-                //listenServer.start();
+//                String msg;
+//                while ((msg = reader.readLine()) != null) {
+//                    System.out.println(msg);
+//                }
+                AuthServerListener listenServer = new AuthServerListener(socket, this.serverID, this);
+                listenServer.start();
             }
 
 
