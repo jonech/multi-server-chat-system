@@ -94,8 +94,6 @@ public class ClientConnection extends Thread {
 						if (joinSuccess) {
 							// put the client to the main hall
 							this.currentRoom = ServerState.getInstance().getServerObject(serverID).joinMainHall(this);
-							//this.currentRoom = ServerState.getInstance().joinGlobalChatRoom(
-							//		"MainHall-"+getName(), this);
 
 							// create a broadcast to other client
 							JSONObject broadcastJSON = new JSONObject();

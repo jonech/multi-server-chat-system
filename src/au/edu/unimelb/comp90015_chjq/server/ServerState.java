@@ -15,16 +15,10 @@ public class ServerState {
 
 	// cache up all the ChatServer
 	private HashMap<String, ChatServer> serverObjectMap;
-	// all the coordination port of the ChatServer
-	//private HashMap<String, Integer> serverPortMap;
-	// all the server address for the Chat Server
-	//private HashMap<String, String> serverAddrMap;
 	
 	// for server's information
 	private HashMap<String, ChatServerInfo> serverInfoMap;
 	
-	// all the Main-Hall
-	//private List<ChatRoom> globalRoomList;
 
 	private ServerState() {
 		//globalRoomList = new ArrayList<>();
@@ -39,8 +33,6 @@ public class ServerState {
 		return instance;
 	}
 
-	/* get a list of Main-Hall */
-	//public synchronized List<ChatRoom> getGlobalRooms() { return globalRoomList; }
 	
 	/* get HashMap for server info */
 	public synchronized HashMap<String, ChatServerInfo> getServerInfoMap() { return serverInfoMap; }
@@ -60,11 +52,6 @@ public class ServerState {
 		return allServers;
 	}
 
-	/* create a Main-Hall, called when ChatServer is created */
-	//public synchronized void createGlobalChatRoom(String server, String roomName, String owner) {
-	//	ChatRoom room = new ChatRoom(server, roomName, owner);
-	//	globalRoomList.add(room);
-	//}
 
 	/* cache up the ChatServer details (coordination port, address, id) */
 	public synchronized void addLocalServer(String serverID, ChatServer server, String address, int port) {
@@ -117,30 +104,6 @@ public class ServerState {
 		return null;
 	}
 
-	/* client joins into the Main-Hall */
-	/*
-	public synchronized ChatRoom joinGlobalChatRoom(String roomName, ClientConnection client) {
-
-		for (ChatRoom room : globalRoomList) {
-			if (room.getRoomName().matches(roomName)) {
-				room.clientJoin(client);
-				return room;
-			}
-		}
-		return null;
-	}*/
-
-	/* get the Main-Hall object */
-	/*
-	public synchronized ChatRoom getServerChatRoom(String server) {
-		for (ChatRoom room : globalRoomList) {
-			if (room.getRoomName().matches((String)"MainHall-" + server)) {
-				return room;
-			}
-		}
-		return null;
-	}*/
-
 
 	/**
 	 *  To Avoid ConcurrentModificationException when rooms get deleted
@@ -189,13 +152,6 @@ public class ServerState {
 	{
 		serverObjectMap.remove(serverID);
 		
-		// find the MainHall of the server and remove
-		/*
-		for (ChatRoom mainhall : globalRoomList) {
-			if (mainhall.server.equals(serverID)) {
-				globalRoomList.remove(mainhall);
-			}
-		}*/
 	}
 	
 	/**
