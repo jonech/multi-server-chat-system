@@ -125,6 +125,7 @@ public class ServerState {
 	 *  Need to only allow one client change room at a time
 	 *  So that the MessageQueue will not get modified concurrently
 	 * */
+	
 	public synchronized void safeChangeRoom(ChatRoom former, ChatRoom newRoom, ClientConnection clientConnection)
 	{
 		JSONObject leaverMsg = new JSONObject();

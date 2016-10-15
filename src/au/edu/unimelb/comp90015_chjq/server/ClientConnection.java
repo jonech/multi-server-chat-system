@@ -276,6 +276,8 @@ public class ClientConnection extends Thread {
 		currentRoom.clientLeave(this);
 	}
 
+	//public void remoteRouteClient()
+	
 	public void moveJoinClient(String former, String roomID, String clientID)
 	{
 		JSONObject responseJSON = new JSONObject();

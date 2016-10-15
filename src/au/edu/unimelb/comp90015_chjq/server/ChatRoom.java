@@ -1,5 +1,7 @@
 package au.edu.unimelb.comp90015_chjq.server;
 
+import org.json.simple.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,8 +45,11 @@ public class ChatRoom {
 	}
 
 
-	public synchronized void clientJoin(ClientConnection client) {
+	public synchronized void clientJoin(ClientConnection client)
+	{
 		clients.add(client);
+		
+		
 	}
 
 	public synchronized void clientLeave(ClientConnection client)
@@ -55,4 +60,5 @@ public class ChatRoom {
 	public synchronized List<ClientConnection> getConnectedClients() {
 		return clients;
 	}
+	
 }
