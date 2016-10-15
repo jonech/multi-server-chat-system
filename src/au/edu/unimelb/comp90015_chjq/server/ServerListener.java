@@ -1,5 +1,6 @@
 package au.edu.unimelb.comp90015_chjq.server;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -139,6 +140,19 @@ public class ServerListener extends Thread {
 					responseJSON = null;
 				}
 				
+				/* server request ROOMLIST */
+				else if (requestType.matches(JSONTag.ROOMLIST)) {
+					responseJSON.put(JSONTag.TYPE, JSONTag.ROOMLIST);
+					JSONArray roomArray = new JSONArray();
+					
+					// main hall
+					roomArray.add(serverObject.getServerMainHall().getRoomName());
+					// local chat room
+					for (ChatRoom room : serverObject.getLocalRoomList()) {
+						roomArray.add(room.getRoomName());
+					}
+					responseJSON.put(JSONTag.ROOMS, roomArray);
+				}
 				
 				// don't bother writing to the connected server if there is nothing to write
 				if (responseJSON != null) {

@@ -37,6 +37,20 @@ public class ServerState {
 	/* get HashMap for server info */
 	public synchronized HashMap<String, ChatServerInfo> getServerInfoMap() { return serverInfoMap; }
 	
+	/* get List of remote server info */
+	public synchronized List<ChatServerInfo> getRemoteServerInfo()
+	{
+		List<ChatServerInfo> remotes = new ArrayList<>();
+		for (HashMap.Entry<String, ChatServerInfo> entry : ServerState.getInstance().getServerInfoMap().entrySet()) {
+			
+			if (entry.getValue().isLocal) {
+				continue;
+			}
+			remotes.add(entry.getValue());
+		}
+		return remotes;
+	}
+	
 	/* get the ChatServer object */
 	public synchronized ChatServer getServerObject(String serverID) { return serverObjectMap.get(serverID); }
 	

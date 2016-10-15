@@ -1,6 +1,9 @@
 package au.edu.unimelb.comp90015_chjq.server;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
@@ -329,6 +332,54 @@ public class ChatServer extends Thread
 			return false;
 		}
 
+	}
+	
+	public synchronized List<String> requestRoomList() throws InterruptedException, ParseException {
+		// make a LOCKIDENTITY JSON broadcast to other server
+		JSONObject broadcastJSON = new JSONObject();
+		broadcastJSON.put(JSONTag.TYPE, JSONTag.ROOMLIST);
+		broadcastJSON.put(JSONTag.SERVERID, serverID);
+		String broadcast = broadcastJSON.toJSONString();
+		
+		// create a thread to send ROOMLIST request to server
+		List<LongSender> threads = new ArrayList<>();
+		for (ChatServerInfo remoteServer : ServerState.getInstance().getRemoteServerInfo()) {
+			
+			String requestServerID = remoteServer.id;
+			int requestPort = Integer.parseInt(remoteServer.port);
+			String requestAddress = remoteServer.address;
+			
+			//LockRequester t = new LockRequester(entry.getKey(), entry.getValue(), broadcast);
+			LongSender t = new LongSender(requestServerID, requestAddress, requestPort, broadcast);
+			
+			t.start();
+			threads.add(t);
+		}
+		
+		List<String> remoteRoomList = new ArrayList<>();
+		// read the result
+		for (LongSender sender : threads) {
+			
+			// obtain the result of the Requester
+			// but release it if the request is not done
+			synchronized (sender.result) {
+				while (!sender.result.requestDone)
+					sender.result.wait();
+				
+				JSONObject response = (JSONObject) new JSONParser().parse(sender.result.responseMessage);
+				JSONArray rooms = (JSONArray) response.get(JSONTag.ROOMS);
+
+				if (rooms == null) {
+					return null;
+				}
+				
+				for (int i=0; i<rooms.size(); i++) {
+					remoteRoomList.add((String) rooms.get(i));
+				}
+			}
+		}
+		
+		return remoteRoomList;
 	}
 	
 	

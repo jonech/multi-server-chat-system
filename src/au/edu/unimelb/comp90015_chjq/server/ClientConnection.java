@@ -117,6 +117,15 @@ public class ClientConnection extends Thread {
 						for ( ChatRoom room : ServerState.getInstance().getAllGlobalLocalChatRoom()) {
 							roomArray.add(room.getRoomName());
 						}
+						
+						// retrieve remote server chatroom
+						List<String> remoteRoomList = ServerState.getInstance().getServerObject(this.serverID).requestRoomList();
+						if (remoteRoomList != null) {
+							for (String room : remoteRoomList) {
+								roomArray.add(room);
+							}
+						}
+						
 						response.put(JSONTag.ROOMS, roomArray);
 						// only response to the requested client
 						getMessageQueue().add(new Message(false, response.toJSONString()));
