@@ -63,8 +63,13 @@ public class ClientConnection extends Thread {
 				// client are forced to leave room by thread
 				// this will put client to main hall
 				if (!message.isFromConnection() && message.getMessage().equals("leave_room")) {
+					ChatRoom mainHall = ServerState.getInstance().getServerObject(this.serverID).getServerMainHall();
+					this.currentRoom.clientLeave(this, mainHall.getRoomName(), true);
+					mainHall.clientJoin(this, this.currentRoom.getRoomName(), false);
+					this.currentRoom = mainHall;
+					/*
 					ServerState.getInstance().safeChangeRoom(currentRoom,
-							ServerState.getInstance().getServerObject(getName()).getServerMainHall(), this);
+							ServerState.getInstance().getServerObject(getName()).getServerMainHall(), this);*/
 				}
 
 				if(message.isFromConnection()) {
@@ -94,19 +99,10 @@ public class ClientConnection extends Thread {
 						if (joinSuccess) {
 							// put the client to the main hall
 							this.currentRoom = ServerState.getInstance().getServerObject(serverID).joinMainHall(this);
-
-							// create a broadcast to other client
-							JSONObject broadcastJSON = new JSONObject();
-							broadcastJSON.put(JSONTag.TYPE, JSONTag.ROOMCHANGE);
-							broadcastJSON.put(JSONTag.IDENTITY, clientID);
-							broadcastJSON.put(JSONTag.FORMER, "");
-							broadcastJSON.put(JSONTag.ROOMID, this.currentRoom.getRoomName());
-							// create message for of other client
-							msgForThreads = new Message(false, broadcastJSON.toJSONString());
+							
 						}
 					}
 					
-					//TODO: re-implement LIST
 					/* client request room LIST */
 					else if (requestType.equals(JSONTag.LIST)) {
 						JSONObject response = new JSONObject();
@@ -154,8 +150,11 @@ public class ClientConnection extends Thread {
 						if (success) {
 							response.put(JSONTag.APPROVED, JSONTag.TRUE);
 							getMessageQueue().add(new Message(false, response.toJSONString()));
-							ChatRoom newRoom = ServerState.getInstance().getServerObject(serverID).getRoom(newRoomID);
-							ServerState.getInstance().safeChangeRoom(currentRoom, newRoom, this);
+							
+							ChatRoom newRoom = ServerState.getInstance().getServerObject(this.serverID).getRoom(newRoomID);
+							this.currentRoom.clientLeave(this, newRoom.getRoomName(), true);
+							newRoom.clientJoin(this, this.currentRoom.getRoomName(), false);
+							this.currentRoom = newRoom;
 						}
 						else {
 							response.put(JSONTag.APPROVED, JSONTag.FALSE);
@@ -172,12 +171,16 @@ public class ClientConnection extends Thread {
 						for (ChatRoom room : ServerState.getInstance().getAllGlobalLocalChatRoom()) {
 							// client requested to join a local chat room
 							if (room.getRoomName().equals(newRoomID) && room.server.equals(this.serverID)) {
-								ServerState.getInstance().safeChangeRoom(currentRoom, room, this);
+								
+								this.currentRoom.clientLeave(this, room.getRoomName(), true);
+								room.clientJoin(this, this.currentRoom.getRoomName(), false);
+								this.currentRoom = room;
+								
+								//ServerState.getInstance().safeChangeRoom(currentRoom, room, this);
 								joinSuccess = true;
 								break;
 							}
 							// client requested to join a chat room from other server
-							//TODO: re-implement joining a remote server
 							else if (room.getRoomName().equals(newRoomID) && !room.server.equals(this.serverID)) {
 								routeClient(ServerState.getInstance().getServerObject(room.server), newRoomID);
 								joinSuccess = true;
@@ -185,10 +188,29 @@ public class ClientConnection extends Thread {
 							}
 
 						}
+						
+						// try remote server now
+						if (!joinSuccess) {
+							
+							ChatServerInfo remoteServer = ServerState.getInstance().getServerObject(this.serverID).requestRemoteChatRoom(newRoomID);
+							if (remoteServer != null) {
+								remoteRouteClient(remoteServer, newRoomID);
+								joinSuccess = true;
+							}
+						}
+						
 						// client stays in the same room if can't find the requested room
-						if (!joinSuccess)
-							ServerState.getInstance().safeChangeRoom(currentRoom, currentRoom, this);
-
+						if (!joinSuccess) {
+							
+							JSONObject Msg = new JSONObject();
+							Msg.put(JSONTag.TYPE, JSONTag.ROOMCHANGE);
+							Msg.put(JSONTag.IDENTITY, this.clientID);
+							Msg.put(JSONTag.FORMER, this.currentRoom.getRoomName());
+							Msg.put(JSONTag.ROOMID, this.currentRoom.getRoomName());
+							
+							getMessageQueue().add(new Message(false, Msg.toJSONString()));
+						}
+						
 					}
 
 					/* client request MOVEJOIN */
@@ -250,7 +272,7 @@ public class ClientConnection extends Thread {
 		}
 	}
 
-
+	/* routing client within the local servers */
 	public void routeClient(ChatServer routedServer, String roomID)
 	{
 		JSONObject responseJSON = new JSONObject();
@@ -261,22 +283,23 @@ public class ClientConnection extends Thread {
 
 		// response to client first
 		getMessageQueue().add(new Message(false, responseJSON.toJSONString()));
-
-		// broadcast ROOMCHANGE to everyone in the room
-		JSONObject broadcastJSON = new JSONObject();
-		broadcastJSON.put(JSONTag.TYPE, JSONTag.ROOMCHANGE);
-		broadcastJSON.put(JSONTag.IDENTITY, this.clientID);
-		broadcastJSON.put(JSONTag.FORMER, currentRoom.getRoomName());
-		broadcastJSON.put(JSONTag.ROOMID, roomID);
-		for (ClientConnection client : currentRoom.getConnectedClients()) {
-			client.getMessageQueue().add(new Message(false, broadcastJSON.toJSONString()));
-		}
-
-		// make the client leave the current room
-		currentRoom.clientLeave(this);
+		
+		currentRoom.clientLeave(this, roomID, true);
 	}
-
-	//public void remoteRouteClient()
+	
+	/* routing client to a remote server */
+	public void remoteRouteClient(ChatServerInfo remoteServer, String roomID)
+	{
+		JSONObject responseJSON = new JSONObject();
+		responseJSON.put(JSONTag.TYPE, JSONTag.ROUTE);
+		responseJSON.put(JSONTag.ROOMID, roomID);
+		responseJSON.put(JSONTag.HOST, remoteServer.address);
+		responseJSON.put(JSONTag.PORT, remoteServer.port);
+		
+		getMessageQueue().add(new Message(false, responseJSON.toJSONString()));
+		
+		currentRoom.clientLeave(this, roomID, true);
+	}
 	
 	public void moveJoinClient(String former, String roomID, String clientID)
 	{
@@ -297,25 +320,15 @@ public class ClientConnection extends Thread {
 
 		// put the client into the requested room
 		if (newRoom != null) {
-			newRoom.clientJoin(this);
+			newRoom.clientJoin(this, former, true);
 			this.currentRoom = newRoom;
 		}
 		else {
 			// room got destroy before client join
 			// move client to server room
 			ChatRoom serverRoom = ServerState.getInstance().getServerObject(getName()).getServerMainHall();
-			serverRoom.clientJoin(this);
+			serverRoom.clientJoin(this, former, true);
 			this.currentRoom = serverRoom;
-		}
-
-		// broadcast ROOMCHANGE to everyone in the room
-		JSONObject broadcastJSON = new JSONObject();
-		broadcastJSON.put(JSONTag.TYPE, JSONTag.ROOMCHANGE);
-		broadcastJSON.put(JSONTag.IDENTITY, clientID);
-		broadcastJSON.put(JSONTag.FORMER, former);
-		broadcastJSON.put(JSONTag.ROOMID, currentRoom.getRoomName());
-		for (ClientConnection client : currentRoom.getConnectedClients()) {
-			client.getMessageQueue().add(new Message(false, broadcastJSON.toJSONString()));
 		}
 	}
 
@@ -354,22 +367,14 @@ public class ClientConnection extends Thread {
 		ServerState.getInstance().getServerObject(this.serverID).getLocalClientIDList().remove(this.clientID);
 		System.out.println("client disconnected: " + clientSocket.getRemoteSocketAddress());
 
-		// broadcast to all other clients in the room
-		JSONObject broadcastJSON = new JSONObject();
-		broadcastJSON.put(JSONTag.TYPE, JSONTag.ROOMCHANGE);
-		broadcastJSON.put(JSONTag.IDENTITY, this.clientID);
-		broadcastJSON.put(JSONTag.FORMER, currentRoom.getRoomName());
-		broadcastJSON.put(JSONTag.ROOMID, "");
-		for (ClientConnection client : currentRoom.getConnectedClients()) {
-			client.getMessageQueue().add(new Message(false, broadcastJSON.toJSONString()));
-		}
-
 		// delete room if the current client is the room owner
+		// also require self broadcast
 		if (currentRoom.getOwner().matches(this.clientID)) {
+			currentRoom.clientLeave(this, "", true);
 			deleteRoom(currentRoom.getRoomName());
 		}
 		else {
-			currentRoom.clientLeave(this);
+			currentRoom.clientLeave(this, "", true);
 		}
 	}
 

@@ -69,7 +69,6 @@ public class ServerState {
 
 	/* cache up the ChatServer details (coordination port, address, id) */
 	public synchronized void addLocalServer(String serverID, ChatServer server, String address, int port) {
-		System.out.println("cached: " + serverID + " "+port);
 		
 		serverInfoMap.put(serverID, new ChatServerInfo(serverID, address, Integer.toString(port), true));
 		serverObjectMap.put(serverID, server);
@@ -116,47 +115,6 @@ public class ServerState {
 			}
 		}
 		return null;
-	}
-
-
-	/**
-	 *  To Avoid ConcurrentModificationException when rooms get deleted
-	 *  Every clients forced to change room to MainHall
-	 *  Need to only allow one client change room at a time
-	 *  So that the MessageQueue will not get modified concurrently
-	 * */
-	
-	public synchronized void safeChangeRoom(ChatRoom former, ChatRoom newRoom, ClientConnection clientConnection)
-	{
-		JSONObject leaverMsg = new JSONObject();
-		leaverMsg.put(JSONTag.TYPE, JSONTag.ROOMCHANGE);
-		leaverMsg.put(JSONTag.IDENTITY, clientConnection.clientID);
-		leaverMsg.put(JSONTag.FORMER, former.getRoomName());
-		leaverMsg.put(JSONTag.ROOMID, newRoom.getRoomName());
-
-		if (!former.getRoomName().matches(newRoom.getRoomName())) {
-
-			// broadcast to the client in the old room
-			for (ClientConnection oldRoomClient : former.getConnectedClients()) {
-				oldRoomClient.getMessageQueue().add(new Message(false, leaverMsg.toJSONString()));
-			}
-			// remove client from the old chat room
-			former.clientLeave(clientConnection);
-
-			// broadcast to client in new room
-			for (ClientConnection newRoomClient : newRoom.getConnectedClients()) {
-				newRoomClient.getMessageQueue().add(new Message(false, leaverMsg.toJSONString()));
-			}
-			// put client into the new chat room
-			newRoom.clientJoin(clientConnection);
-			// also cache the chatroom object in clientconnection
-			clientConnection.currentRoom = newRoom;
-			System.out.println(clientConnection.clientID + " join " + newRoom.getRoomName());
-		}
-		else {
-			// join fail, so former room is the same as new room
-			clientConnection.getMessageQueue().add(new Message(false, leaverMsg.toJSONString()));
-		}
 	}
 	
 	/**

@@ -49,7 +49,7 @@ public class JSONTag {
 	// server self introduce
 	public static final String NEWSERVERID = "newserverid";
 	
-	// server chatroom count
-	public static final String ROOMCOUNT = "roomcount";
-
+	// server chatroom check
+	public static final String ROOMEXIST = "roomexist";
+	public static final String EXIST = "exist";
 }

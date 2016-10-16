@@ -4,12 +4,15 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.Socket;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import javax.net.ssl.SSLSocketFactory;
 
 public class MessageReceiveThread implements Runnable {
 
@@ -198,8 +201,8 @@ public class MessageReceiveThread implements Runnable {
 				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			
-			Socket temp_socket = new Socket(host, port);
-			
+			//Socket temp_socket = new Socket(host, port);
+			Socket temp_socket = SSLSocketFactory.getDefault().createSocket(host, port);
 			// send #movejoin
 			DataOutputStream out = new DataOutputStream(temp_socket.getOutputStream());
 			JSONObject request = ClientMessages.getMoveJoinRequest(state.getIdentity(), state.getRoomId(), temp_room);

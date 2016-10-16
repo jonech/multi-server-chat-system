@@ -4,6 +4,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.mortbay.util.ajax.JSON;
 
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
@@ -153,6 +154,26 @@ public class ServerListener extends Thread {
 					}
 					responseJSON.put(JSONTag.ROOMS, roomArray);
 				}
+				
+				/* server request ROOMEXIST */
+				else if (requestType.matches(JSONTag.ROOMEXIST)) {
+					// prepare response JSON
+					responseJSON.put(JSONTag.TYPE, JSONTag.ROOMEXIST);
+					responseJSON.put(JSONTag.SERVERID, this.serverID);
+					responseJSON.put(JSONTag.HOST, serverObject.listeningSocket.getInetAddress().getHostAddress());
+					responseJSON.put(JSONTag.PORT, Integer.toString(serverObject.listeningSocket.getLocalPort()));
+					
+					// check if the room exist on the chat server
+					String roomID = (String) requestJSON.get(JSONTag.ROOMID);
+					ChatRoom room = serverObject.getRoom(roomID);
+					if (room == null) {
+						responseJSON.put(JSONTag.EXIST, JSONTag.FALSE);
+					}
+					else {
+						responseJSON.put(JSONTag.EXIST, JSONTag.TRUE);
+					}
+				}
+				
 				
 				// don't bother writing to the connected server if there is nothing to write
 				if (responseJSON != null) {
