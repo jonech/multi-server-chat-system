@@ -18,7 +18,7 @@ private int DEFAULT_SAMPLING_PERIOD = 5;
             Iterator iterator = serverInfoMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 HashMap.Entry<String, ChatServerInfo> pair = (HashMap.Entry<String, ChatServerInfo>)iterator.next();
-                if (pair.getValue().isLocal)
+                if (pair.getValue().isLocal || pair.getValue().id.contains("auth"))
                     iterator.remove();
             }
             CountDownLatch endSync = new CountDownLatch(serverInfoMap.size());

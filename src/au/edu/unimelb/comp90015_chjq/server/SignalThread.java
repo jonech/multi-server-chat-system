@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+
+import javax.net.ssl.SSLSocketFactory;
 import org.json.simple.JSONObject;
 import javax.net.ssl.SSLSocketFactory;
 public class SignalThread extends Thread{
@@ -24,7 +26,8 @@ public class SignalThread extends Thread{
         this.address = address;
         this.serverId = serverId;
         try {
-            System.out.println(serverId + " " + address + " " + port);
+
+            //System.out.println(serverId + " " + address + " " + port);
             socket = SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(address), port);
             writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));

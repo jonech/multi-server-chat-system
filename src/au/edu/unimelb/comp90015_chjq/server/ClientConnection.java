@@ -39,6 +39,7 @@ public class ClientConnection extends Thread {
 			writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF8"));
 			reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF8"));
 			messageQueue = new LinkedBlockingQueue<Message>();
+			currentRoom = null;
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -273,7 +274,7 @@ public class ClientConnection extends Thread {
 						clientQuit();
 					}
 
-					if (msgForThreads != null) {
+					if (msgForThreads != null && currentRoom != null) {
 						// put message to the client that is in the current same room
 						List<ClientConnection> connectedClients = currentRoom.getConnectedClients();
 						for(ClientConnection client : connectedClients) {
@@ -395,6 +396,9 @@ public class ClientConnection extends Thread {
 
 		// delete room if the current client is the room owner
 		// also require self broadcast
+		if (currentRoom == null)
+			return;
+		
 		if (currentRoom.getOwner().matches(this.clientID)) {
 			currentRoom.clientLeave(this, "", true);
 			deleteRoom(currentRoom.getRoomName());
