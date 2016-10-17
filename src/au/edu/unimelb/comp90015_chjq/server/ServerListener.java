@@ -1,9 +1,12 @@
 package au.edu.unimelb.comp90015_chjq.server;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.mortbay.util.ajax.JSON;
 
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -20,17 +23,18 @@ public class ServerListener extends Thread {
 	private String serverID;
 	private ChatServer serverObject;
 
-	public ServerListener(String serverID, int coordinationPort, ChatServer server)
+	public ServerListener(String serverID, String address, int coordinationPort, ChatServer server)
 	{
 		try {
 
 			this.serverID = serverID;
 			this.serverObject = server;
 
-			String address = ServerState.getInstance().getServerAddrMap().get(serverID);
+			//String address = ServerState.getInstance().getServerAddrMap().get(serverID);
 
-			listeningSocket = new ServerSocket(coordinationPort, 10, InetAddress.getByName(address));
-
+			//listeningSocket = new ServerSocket(coordinationPort, 10, InetAddress.getByName(address));
+			listeningSocket = SSLServerSocketFactory.getDefault().createServerSocket(
+					coordinationPort, 10, InetAddress.getByName(address));
 		}
 
 		catch (IOException e) {
@@ -125,7 +129,57 @@ public class ServerListener extends Thread {
 					}
 					responseJSON = null;
 				}
-
+				
+				/* server self-introduce NEWSERVERID */
+				else if (requestType.matches(JSONTag.NEWSERVERID)) {
+					String newServerID = (String) requestJSON.get(JSONTag.SERVERID);
+					String host = (String) requestJSON.get(JSONTag.HOST);
+					String port = (String) requestJSON.get(JSONTag.PORT);
+					
+					// if server does not exist, add it
+					ServerState.getInstance().addRemoteServer(newServerID, host, Integer.parseInt(port));
+					responseJSON = null;
+				}
+				
+				/* server request ROOMLIST */
+				else if (requestType.matches(JSONTag.ROOMLIST)) {
+					responseJSON.put(JSONTag.TYPE, JSONTag.ROOMLIST);
+					JSONArray roomArray = new JSONArray();
+					
+					// main hall
+					roomArray.add(serverObject.getServerMainHall().getRoomName());
+					// local chat room
+					for (ChatRoom room : serverObject.getLocalRoomList()) {
+						roomArray.add(room.getRoomName());
+					}
+					responseJSON.put(JSONTag.ROOMS, roomArray);
+				}
+				
+				/* server request ROOMEXIST */
+				else if (requestType.matches(JSONTag.ROOMEXIST)) {
+					// prepare response JSON
+					responseJSON.put(JSONTag.TYPE, JSONTag.ROOMEXIST);
+					responseJSON.put(JSONTag.SERVERID, this.serverID);
+					responseJSON.put(JSONTag.HOST, serverObject.listeningSocket.getInetAddress().getHostAddress());
+					responseJSON.put(JSONTag.PORT, Integer.toString(serverObject.listeningSocket.getLocalPort()));
+					
+					// check if the room exist on the chat server
+					String roomID = (String) requestJSON.get(JSONTag.ROOMID);
+					ChatRoom room = serverObject.getRoom(roomID);
+					if (room == null) {
+						responseJSON.put(JSONTag.EXIST, JSONTag.FALSE);
+					}
+					else {
+						responseJSON.put(JSONTag.EXIST, JSONTag.TRUE);
+					}
+				}
+				
+				/* server HEARTBEAT signal */
+				else if (requestType.matches(JSONTag.HEARTBEAT)) {
+					responseJSON.put(JSONTag.TYPE, JSONTag.HEARTBEAT);
+					System.out.print("HeartBeat Replied.");
+				}
+				
 				// don't bother writing to the connected server if there is nothing to write
 				if (responseJSON != null) {
 					writer.write(responseJSON.toJSONString() + "\n");

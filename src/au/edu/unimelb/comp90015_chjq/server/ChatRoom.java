@@ -1,5 +1,7 @@
 package au.edu.unimelb.comp90015_chjq.server;
 
+import org.json.simple.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,10 +30,10 @@ public class ChatRoom {
 		this.server = server;
 		this.roomName = roomName;
 		this.owner = owner;
-		clientList = new ArrayList<>();
+		clientList = new ArrayList<String>();
 		clientList.add(owner);
 
-		clients = new ArrayList<>();
+		clients = new ArrayList<ClientConnection>();
 	}
 
 	public String getRoomName() {
@@ -43,16 +45,44 @@ public class ChatRoom {
 	}
 
 
-	public synchronized void clientJoin(ClientConnection client) {
+	public synchronized void clientJoin(ClientConnection client, String formerRoom, boolean selfBroadcast)
+	{
+		JSONObject joinMessage = new JSONObject();
+		joinMessage.put(JSONTag.TYPE, JSONTag.ROOMCHANGE);
+		joinMessage.put(JSONTag.IDENTITY, client.clientID);
+		joinMessage.put(JSONTag.FORMER, formerRoom);
+		joinMessage.put(JSONTag.ROOMID, this.roomName);
+		
 		clients.add(client);
+		chatRoomBroadcast(client.clientID, joinMessage.toJSONString(), selfBroadcast);
 	}
 
-	public synchronized void clientLeave(ClientConnection client)
+	public synchronized void clientLeave(ClientConnection client, String newRoom, boolean selfBroadcast)
 	{
+		JSONObject leaveMessage = new JSONObject();
+		leaveMessage.put(JSONTag.TYPE, JSONTag.ROOMCHANGE);
+		leaveMessage.put(JSONTag.IDENTITY, client.clientID);
+		leaveMessage.put(JSONTag.FORMER, this.roomName);
+		leaveMessage.put(JSONTag.ROOMID, newRoom);
+		
+		chatRoomBroadcast(client.clientID, leaveMessage.toJSONString(), selfBroadcast);
 		clients.remove(client);
 	}
 
 	public synchronized List<ClientConnection> getConnectedClients() {
 		return clients;
 	}
+	
+	public synchronized void chatRoomBroadcast(String clientID, String message, boolean selfBroadcast)
+	{
+		for (ClientConnection clientConnection : clients) {
+			
+			if (!selfBroadcast && clientConnection.clientID.equals(clientID)) {
+				continue;
+			}
+			
+			clientConnection.getMessageQueue().add(new Message(false, message));
+		}
+	}
+	
 }
