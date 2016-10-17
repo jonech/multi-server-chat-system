@@ -39,10 +39,10 @@ public class ServerState {
 	}
 
 
-	public synchronized  void removeRemoteServer(String serverID) {
+	public synchronized  void removeRemoteServer(String serverID)
+	{
 		serverInfoMap.remove(serverID);
 		System.out.println("Remove remote server " + serverID);
-
 	}
 
 	

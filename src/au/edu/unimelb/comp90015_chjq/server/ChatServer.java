@@ -78,9 +78,11 @@ public class ChatServer extends Thread
 			
 			selfIntroduce();
 			HeartBeatSignal heartBeatThread = new HeartBeatSignal();
-			heartBeatThread.run();
+			heartBeatThread.start();
+			
 			while (true) {
 				// accept new client
+				System.out.println("listening to new client::");
 				Socket clientSocket = listeningSocket.accept();
 
 				// put client to new client connection thread

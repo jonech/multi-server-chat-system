@@ -55,51 +55,31 @@ public class Initializer {
 				int client_port = Integer.parseInt(temp.get(CLIENT_PORT_INDEX));
 				int coord_port = Integer.parseInt(temp.get(COORD_PORT_INDEX));
 				String location = temp.get(LOCATION_INDEX);
-
-				System.out.print(location.equals("local"));
-				// create chat server if its local
-				if (location.equals("local")) {
-					// create server
-					ChatServer server = new ChatServer(server_id, server_addr, client_port, coord_port);
-					
-					// cache up the server information to server state
-					//ServerState.getInstance().createGlobalChatRoom(server_id, "MainHall-"+server_id, "SERVER-"+server_id);
-					ServerState.getInstance().addLocalServer(server_id, server, server_addr, coord_port);
-					
-					// start server
-					System.out.println("start");
-					server.start();
-					String server_type = temp.get(SERVER_TYPE);
-					
-					//auth server
-					if (server_type.equals("authserver")) {
-						ServerState.authServerAddr = server_addr;
-						ServerState.authServerPort = coord_port;
-					}
+				String server_type = temp.get(SERVER_TYPE);
+				
+				//auth server
+				if(server_type.equals("authserver")){
+					ServerState.authServerAddr = server_addr;
+					ServerState.authServerPort = coord_port;
 				}
-
+				
 				//chatserver
 				else{
 					// create chat server if its local
 					if (location.equals("local")) {
 						// create server
 						ChatServer server = new ChatServer(server_id, server_addr, client_port, coord_port);
-
-						// cache up the server information to server state
+						
+						// cache up the server information to server start
 						ServerState.getInstance().addLocalServer(server_id, server, server_addr, coord_port);
-
+						
 						// start server
 						server.start();
 					}
 					else {
 						ServerState.getInstance().addRemoteServer(server_id, server_addr, coord_port);
 					}
-
-					for (ChatServer server : ServerState.getInstance().getAllServerObject()) {
-						//server;
-					}
 				}
-				
 
 				
 			}

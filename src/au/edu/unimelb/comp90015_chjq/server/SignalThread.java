@@ -10,7 +10,9 @@ import java.io.OutputStreamWriter;
 import javax.net.ssl.SSLSocketFactory;
 import org.json.simple.JSONObject;
 import javax.net.ssl.SSLSocketFactory;
-public class SignalThread extends Thread{
+public class SignalThread extends Thread
+{
+
     private int DEFAULT_SAMPLING_PERIOD = 5000;
     private CountDownLatch endSync;
     private int port;
@@ -20,27 +22,35 @@ public class SignalThread extends Thread{
     private BufferedReader reader;
     private String serverId;
     private boolean result = false;
-    public SignalThread(CountDownLatch endSync, int port, String address, String serverId) {
+    
+    public SignalThread(CountDownLatch endSync, int port, String address, String serverId)
+    {
         this.endSync = endSync;
         this.port = port;
         this.address = address;
         this.serverId = serverId;
+        
         try {
 
             //System.out.println(serverId + " " + address + " " + port);
             socket = SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(address), port);
             writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
-    boolean getResult() {return  result;}
-    String getServerId() { return serverId;}
+    
+    public boolean getResult() { return  result; }
+    
+    public String getServerId() { return serverId;}
+    
     @Override
     public void run () {
         JSONObject message = new JSONObject();
         message.put("type", "heartbeat");
+        
         try {
             System.out.print("Heartbeat to " + serverId + "\n");
             writer.write(message.toJSONString() + "\n");
@@ -48,15 +58,21 @@ public class SignalThread extends Thread{
             Thread.sleep(DEFAULT_SAMPLING_PERIOD);
             if (reader.readLine() != null)
                 result = true;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            
             e.printStackTrace();
             System.out.println(serverId + "crash");
-        } finally {
+        }
+        finally {
+            
             try {
                 if (socket != null)
                     socket.close();
+	            Thread.sleep(200);
                 endSync.countDown();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }

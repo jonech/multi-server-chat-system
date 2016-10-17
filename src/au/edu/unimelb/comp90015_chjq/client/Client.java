@@ -42,18 +42,14 @@ public class Client {
 			try {
 				parser.parseArgument(args);
 				String hostname = values.getHost();
-				identity = values.getIdeneity();
+				identity = values.getIdentity();
 				int port = values.getPort();
 				debug = values.isDebug();
 
-				//socket = new Socket(hostname, port);
-				SSLSocketFactory f = (SSLSocketFactory)SSLSocketFactory.getDefault();
-				socket = f.getDefault().createSocket(hostname, port);
 
-//				BufferedWriter w = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-//				System.out.println("established");
-//				w.write("established" + "\n");
-//				w.flush();
+				socket = SSLSocketFactory.getDefault().createSocket(hostname, port);
+				System.out.println("connecting...");
+
 
 
 			} catch (CmdLineException e) {

@@ -51,7 +51,11 @@ public class MessageSendThread implements Runnable {
 		String id = cmdin.nextLine();
 		try {
 			MessageSend(socket, "#newidentity "+id);
-		}catch (IOException e){
+			// set the id first...
+			// crucial part to make sure all the state works after...
+			state.setIdentity(id);
+		}
+		catch (IOException e){
 
 		}
 
