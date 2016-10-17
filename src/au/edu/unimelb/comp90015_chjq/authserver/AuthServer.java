@@ -11,11 +11,13 @@ import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.ServerSocket;
 import java.util.HashMap;
+import au.edu.unimelb.comp90015_chjq.server.JSONTag;
 
 /**
  * Created by alw on 2016/10/13.
  */
-public class AuthServer{
+public class AuthServer
+{
     public ServerSocket listeningSocket;
     public String serverID;
     public int coordPort;
@@ -26,9 +28,7 @@ public class AuthServer{
         map = new HashMap<String, String>();
 
     }
-
-
-
+    
     private HashMap<String, String> map;
 
     public JSONParser parser;
@@ -106,19 +106,15 @@ public class AuthServer{
             //System.out.println(serverID + " - " +currentThread() + " listening to client on port "+ listeningSocket.getLocalSocketAddress());
 
             // start listening to servers
-            while(true){
+            while(true)
+            {
                 SSLSocket socket = (SSLSocket)listeningSocket.accept();
 
                 System.out.print(socket.getRemoteSocketAddress());
 
                 InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
                 BufferedReader reader = new BufferedReader(inputStreamReader);
-
-                //Read input from the client and print it to the screen
-//                String msg;
-//                while ((msg = reader.readLine()) != null) {
-//                    System.out.println(msg);
-//                }
+                
                 AuthServerListener listenServer = new AuthServerListener(socket, this.serverID, this);
                 listenServer.start();
             }

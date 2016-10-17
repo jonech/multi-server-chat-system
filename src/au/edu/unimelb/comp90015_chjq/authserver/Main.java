@@ -29,7 +29,8 @@ public class Main {
 
 
 
-        } catch (CmdLineException e) {
+        }
+        catch (CmdLineException e) {
 
             System.err.println(e.getMessage());
 

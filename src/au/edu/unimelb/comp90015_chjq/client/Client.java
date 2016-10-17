@@ -48,11 +48,9 @@ public class Client {
 
 
 				socket = SSLSocketFactory.getDefault().createSocket(hostname, port);
-				System.out.println("connecting...");
-
-
-
-			} catch (CmdLineException e) {
+				
+			}
+			catch (CmdLineException e) {
 				e.printStackTrace();
 			}
 
@@ -106,9 +104,11 @@ public class Client {
 			Thread receiveThread = new Thread(new MessageReceiveThread(socket, state, messageSendThread, debug));
 			receiveThread.start();
 
-		} catch (UnknownHostException e) {
+		}
+		catch (UnknownHostException e) {
 			System.out.println("Unknown host");
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			System.out.println("Communication Error: " + e.getMessage());
 		}
 	}

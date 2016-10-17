@@ -9,7 +9,8 @@ public class ServerInfo {
     public int clients_port;
     public int coordination_port;
 
-    public ServerInfo(String serverid, String server_address, int clients_port, int coordination_port) {
+    public ServerInfo(String serverid, String server_address, int clients_port, int coordination_port)
+    {
         this.serverid = serverid;
         this.server_address = server_address;
         this.clients_port = clients_port;
