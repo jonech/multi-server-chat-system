@@ -21,7 +21,6 @@ public class AuthServerListener extends Thread {
             this.socket = socket;
             this.serverObject = serverObject;
             this.serverID = serverid;
-
         }
 
         catch (Exception e) {
@@ -36,14 +35,15 @@ public class AuthServerListener extends Thread {
             System.out.println(serverID + " - listening to server on port " + socket.getLocalSocketAddress());
 
                 // accept the connection from server
-                System.out.println(serverID + " - received server connection: " + socket.getRemoteSocketAddress());
+            System.out.println(serverID + " - received server connection: " + socket.getRemoteSocketAddress());
 
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                // read the request from server
-                String request = reader.readLine();
-                // parse the request
+            String request= reader.readLine();
+
+            System.out.println(request);
+//            while((request= reader.readLine())!=null){
                 JSONObject requestJSON = (JSONObject) new JSONParser().parse(request);
                 String requestType = (String) requestJSON.get(JSONTag.TYPE);
 
@@ -57,7 +57,8 @@ public class AuthServerListener extends Thread {
                     responseJSON.put(JSONTag.TYPE, JSONTag.LOGIN);
 
                     //use password and account
-                    if(accessToken.length() < 6){
+                    if(accessToken.length() < 10){
+                        System.out.println("username login");
                         String approved = serverObject.verifyAccount(account, password);
                         responseJSON.put(JSONTag.APPROVED, approved);
                         responseJSON.put(JSONTag.USERNAME, account);
@@ -76,16 +77,22 @@ public class AuthServerListener extends Thread {
                     }
                 }
 
-
-
-                // don't bother writing to the connected server if there is nothing to write
-                if (responseJSON != null) {
-                    writer.write(responseJSON.toJSONString() + "\n");
-                    writer.flush();
-                    System.out.println(serverID + " - response sent to " + socket.getRemoteSocketAddress());
-                }
-                // disconnect the server
+            String a = responseJSON.toJSONString()+"\n";
+                System.out.println(a);
+                writer.write(a);
+                writer.flush();
                 socket.close();
+
+//            }
+
+                // read the request from server
+                 ;
+                // parse the request
+
+
+
+
+
 
 
         }

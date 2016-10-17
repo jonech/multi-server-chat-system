@@ -101,7 +101,7 @@ public class AuthServer{
 
         try {
             parser = new JSONParser();
-            map = new HashMap<String, String>();
+
 
             //System.out.println(serverID + " - " +currentThread() + " listening to client on port "+ listeningSocket.getLocalSocketAddress());
 
@@ -115,12 +115,12 @@ public class AuthServer{
                 BufferedReader reader = new BufferedReader(inputStreamReader);
 
                 //Read input from the client and print it to the screen
-                String msg = null;
-                while ((msg = reader.readLine()) != null) {
-                    System.out.println(msg);
-                }
-                //AuthServerListener listenServer = new AuthServerListener(socket, this.serverID, this);
-                //listenServer.start();
+//                String msg;
+//                while ((msg = reader.readLine()) != null) {
+//                    System.out.println(msg);
+//                }
+                AuthServerListener listenServer = new AuthServerListener(socket, this.serverID, this);
+                listenServer.start();
             }
 
 
@@ -168,6 +168,8 @@ public class AuthServer{
     }
 
     public String verifyAccount(String account, String password){
+        System.out.println(account+" "+password);
+        System.out.println(map.get(account));
         if(password.equals(map.get(account))){
             return JSONTag.TRUE;
         }

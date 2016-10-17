@@ -19,6 +19,7 @@ public class Initializer {
 	public static int CLIENT_PORT_INDEX = 2;
 	public static int COORD_PORT_INDEX = 3;
 	public static int LOCATION_INDEX = 4;
+	public static int SERVER_TYPE = 5;
 	
 	public static void main(String args[]) throws CmdLineException {
 
@@ -54,6 +55,7 @@ public class Initializer {
 				int client_port = Integer.parseInt(temp.get(CLIENT_PORT_INDEX));
 				int coord_port = Integer.parseInt(temp.get(COORD_PORT_INDEX));
 				String location = temp.get(LOCATION_INDEX);
+
 				System.out.print(location.equals("local"));
 				// create chat server if its local
 				if (location.equals("local")) {
@@ -67,14 +69,38 @@ public class Initializer {
 					// start server
 					System.out.println("start");
 					server.start();
+					String server_type = temp.get(SERVER_TYPE);
+					
+					//auth server
+					if (server_type.equals("authserver")) {
+						ServerState.authServerAddr = server_addr;
+						ServerState.authServerPort = coord_port;
+					}
 				}
-				else {
-					ServerState.getInstance().addRemoteServer(server_id, server_addr, coord_port);
+
+				//chatserver
+				else{
+					// create chat server if its local
+					if (location.equals("local")) {
+						// create server
+						ChatServer server = new ChatServer(server_id, server_addr, client_port, coord_port);
+
+						// cache up the server information to server state
+						ServerState.getInstance().addLocalServer(server_id, server, server_addr, coord_port);
+
+						// start server
+						server.start();
+					}
+					else {
+						ServerState.getInstance().addRemoteServer(server_id, server_addr, coord_port);
+					}
+
+					for (ChatServer server : ServerState.getInstance().getAllServerObject()) {
+						//server;
+					}
 				}
 				
-				for (ChatServer server : ServerState.getInstance().getAllServerObject()) {
-					//server;
-				}
+
 				
 			}
 

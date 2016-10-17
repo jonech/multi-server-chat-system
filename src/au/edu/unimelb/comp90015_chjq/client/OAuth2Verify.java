@@ -57,7 +57,7 @@ public class OAuth2Verify {
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         // load client secrets
         clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-                new InputStreamReader(OAuth2Verify.class.getResourceAsStream("/resources/client_secrets1.json")));
+                new InputStreamReader(OAuth2Verify.class.getResourceAsStream("/client_secrets1.json")));
         if (clientSecrets.getDetails().getClientId().startsWith("Enter")
                 || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
             System.out.println("Enter Client ID and Secret from https://code.google.com/apis/console/ "

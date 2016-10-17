@@ -53,6 +53,14 @@ public class JSONTag {
 	public static final String ROOMEXIST = "roomexist";
 	public static final String EXIST = "exist";
 
+	// HeartBeat
 	public static  final String HEARTBEAT = "heartbeat";
 	
+
+	//user login
+	public static final String LOGIN= "login";
+	public static final String PASSWORD = "password";
+	public static final String ACCOUNT = "account";
+	public static final String ACCESSTOKEN="accessToken";
+	public static final String USERNAME = "username";
 }

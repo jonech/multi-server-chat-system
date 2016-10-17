@@ -1,10 +1,12 @@
 package au.edu.unimelb.comp90015_chjq.client;
 
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
+
+
 import java.net.Socket;
 
 import org.json.simple.JSONArray;
@@ -15,6 +17,7 @@ import org.json.simple.parser.ParseException;
 import javax.net.ssl.SSLSocketFactory;
 
 public class MessageReceiveThread implements Runnable {
+	//private AccountInfo accountInfo;
 
 	private Socket socket;
 	private State state;
@@ -33,6 +36,7 @@ public class MessageReceiveThread implements Runnable {
 		this.state = state;
 		this.messageSendThread = messageSendThread;
 		this.debug = debug;
+		//this.accountInfo = accountInfo;
 	}
 
 	@Override
@@ -77,8 +81,19 @@ public class MessageReceiveThread implements Runnable {
 				System.exit(1);
 			}
 			else{
-				System.out.println("Wellcome, "+username);
-				System.out.println("Please use #newidentity to create a id you want to use:");
+				System.out.println("Wellcome, " + username);
+				System.out.println("Please create a id you want to use:");
+
+
+//				String id = new BufferedReader(new InputStreamReader(System.in)).readLine();
+//
+//				if(debug){
+//					System.out.println("id is:"+id);
+//				}
+//				messageSendThread.MessageSend(socket, "#newidentity "+id);
+
+
+
 			}
 			return;
 		}
@@ -92,6 +107,10 @@ public class MessageReceiveThread implements Runnable {
 				System.out.println(state.getIdentity() + " already in use.");
 				socket.close();
 				System.exit(1);
+			}
+
+			else{
+
 			}
 			return;
 		}
