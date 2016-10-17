@@ -44,7 +44,7 @@ public class Initializer {
 			while ((line = reader.readLine()) != null) {
 				
 				// put the input line into array list
-				ArrayList<String> temp = new ArrayList<>();
+				ArrayList<String> temp = new ArrayList<String>();
 				for (String word : line.split("\t")) {
 					temp.add(word);
 				}
@@ -54,7 +54,7 @@ public class Initializer {
 				int client_port = Integer.parseInt(temp.get(CLIENT_PORT_INDEX));
 				int coord_port = Integer.parseInt(temp.get(COORD_PORT_INDEX));
 				String location = temp.get(LOCATION_INDEX);
-				
+				System.out.print(location.equals("local"));
 				// create chat server if its local
 				if (location.equals("local")) {
 					// create server
@@ -65,6 +65,7 @@ public class Initializer {
 					ServerState.getInstance().addLocalServer(server_id, server, server_addr, coord_port);
 					
 					// start server
+					System.out.println("start");
 					server.start();
 				}
 				else {

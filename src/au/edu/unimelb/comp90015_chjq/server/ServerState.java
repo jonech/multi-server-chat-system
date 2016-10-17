@@ -5,6 +5,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * Server State stores ChatServer and Main-Halls
@@ -20,6 +21,7 @@ public class ServerState {
 	private HashMap<String, ChatServerInfo> serverInfoMap;
 	
 
+
 	private ServerState() {
 		//globalRoomList = new ArrayList<>();
 		serverObjectMap = new HashMap<>();
@@ -31,6 +33,12 @@ public class ServerState {
 			instance = new ServerState();
 		}
 		return instance;
+	}
+
+
+	public synchronized  void removeRemoteServer(String serverID) {
+		serverInfoMap.remove(serverID);
+		System.out.println("Remove remote server " + serverID);
 	}
 
 	
@@ -59,7 +67,7 @@ public class ServerState {
 	
 	/* get ALL ChatServer object */
 	public synchronized List<ChatServer> getAllServerObject() {
-		List<ChatServer> allServers = new ArrayList<>();
+		List<ChatServer> allServers = new ArrayList<ChatServer>();
 		for (HashMap.Entry<String, ChatServer> severObject : serverObjectMap.entrySet()) {
 			allServers.add(severObject.getValue());
 		}

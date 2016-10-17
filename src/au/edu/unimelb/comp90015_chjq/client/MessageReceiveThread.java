@@ -25,7 +25,7 @@ public class MessageReceiveThread implements Runnable {
 	private JSONParser parser = new JSONParser();
 
 	private boolean run = true;
-	
+
 	private MessageSendThread messageSendThread;
 
 	public MessageReceiveThread(Socket socket, State state, MessageSendThread messageSendThread, boolean debug) throws IOException {
@@ -66,11 +66,27 @@ public class MessageReceiveThread implements Runnable {
 	public void MessageReceive(Socket socket, JSONObject message)
 			throws IOException, ParseException {
 		String type = (String) message.get("type");
-		
+
+		if(type.equals("login")){
+			boolean approved = Boolean.parseBoolean((String) message.get("approved"));
+			String username = (String)message.get("username");
+			// terminate program if failed
+			if (!approved) {
+				System.out.println("Login Failed");
+				socket.close();
+				System.exit(1);
+			}
+			else{
+				System.out.println("Wellcome, "+username);
+				System.out.println("Please use #newidentity to create a id you want to use:");
+			}
+			return;
+		}
+
 		// server reply of #newidentity
 		if (type.equals("newidentity")) {
 			boolean approved = Boolean.parseBoolean((String) message.get("approved"));
-			
+
 			// terminate program if failed
 			if (!approved) {
 				System.out.println(state.getIdentity() + " already in use.");
@@ -79,7 +95,7 @@ public class MessageReceiveThread implements Runnable {
 			}
 			return;
 		}
-		
+
 		// server reply of #list
 		if (type.equals("roomlist")) {
 			JSONArray array = (JSONArray) message.get("rooms");
@@ -107,7 +123,7 @@ public class MessageReceiveThread implements Runnable {
 					System.out.println(message.get("identity") + " has quit!");
 					System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 				}
-			// identify whether the client is new or not
+				// identify whether the client is new or not
 			} else if (message.get("former").equals("")) {
 				// change state if it's the current client
 				if (message.get("identity").equals(state.getIdentity())) {
@@ -116,7 +132,7 @@ public class MessageReceiveThread implements Runnable {
 				System.out.println(message.get("identity") + " moves to "
 						+ (String) message.get("roomid"));
 				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
-			// identify whether roomchange actually happens
+				// identify whether roomchange actually happens
 			} else if (message.get("former").equals(message.get("roomid"))) {
 				System.out.println("room unchanged");
 				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
@@ -127,14 +143,14 @@ public class MessageReceiveThread implements Runnable {
 				if (message.get("identity").equals(state.getIdentity())) {
 					state.setRoomId((String) message.get("roomid"));
 				}
-				
+
 				System.out.println(message.get("identity") + " moves from " + message.get("former") + " to "
 						+ message.get("roomid"));
 				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			return;
 		}
-		
+
 		// server reply of #who
 		if (type.equals("roomcontents")) {
 			JSONArray array = (JSONArray) message.get("identities");
@@ -149,7 +165,7 @@ public class MessageReceiveThread implements Runnable {
 			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			return;
 		}
-		
+
 		// server forwards message
 		if (type.equals("message")) {
 			System.out.println(message.get("identity") + ": "
@@ -157,8 +173,8 @@ public class MessageReceiveThread implements Runnable {
 			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			return;
 		}
-		
-		
+
+
 		// server reply of #createroom
 		if (type.equals("createroom")) {
 			boolean approved = Boolean.parseBoolean((String)message.get("approved"));
@@ -173,7 +189,7 @@ public class MessageReceiveThread implements Runnable {
 			}
 			return;
 		}
-		
+
 		// server reply of # deleteroom
 		if (type.equals("deleteroom")) {
 			boolean approved = Boolean.parseBoolean((String)message.get("approved"));
@@ -188,13 +204,13 @@ public class MessageReceiveThread implements Runnable {
 			}
 			return;
 		}
-		
+
 		// server directs the client to another server
 		if (type.equals("route")) {
 			String temp_room = (String)message.get("roomid");
 			String host = (String)message.get("host");
 			int port = Integer.parseInt((String)message.get("port"));
-			
+
 			// connect to the new server
 			if (debug) {
 				System.out.println("Connecting to server " + host + ":" + port);
@@ -211,16 +227,16 @@ public class MessageReceiveThread implements Runnable {
 				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			send(out, request);
-			
+
 			// wait to receive serverchange
 			BufferedReader temp_in = new BufferedReader(new InputStreamReader(temp_socket.getInputStream()));
 			JSONObject obj = (JSONObject) parser.parse(temp_in.readLine());
-			
+
 			if (debug) {
 				System.out.println("Receiving: " + obj.toJSONString());
 				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
-			
+
 			// serverchange received and switch server
 			if (obj.get("type").equals("serverchange") && obj.get("approved").equals("true")) {
 				messageSendThread.switchServer(temp_socket, out);
@@ -239,13 +255,13 @@ public class MessageReceiveThread implements Runnable {
 			}
 			return;
 		}
-		
+
 		if (debug) {
 			System.out.println("Unknown Message: " + message);
 			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 		}
 	}
-	
+
 	public void switchServer(Socket temp_socket, BufferedReader temp_in) throws IOException {
 		in.close();
 		in = temp_in;

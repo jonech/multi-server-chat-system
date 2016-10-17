@@ -1,4 +1,4 @@
-package au.edu.unimelb.comp90015_chjq.server;
+package au.edu.unimelb.comp90015_chjq.authserver;
 
 /**
  * Created by jonech on 8/09/2016.
@@ -44,15 +44,11 @@ public class JSONTag {
 
 	public static final String HOST = "host";
 	public static final String PORT = "port";
-	
-	
-	// server self introduce
-	public static final String NEWSERVERID = "newserverid";
-	
-	// server chatroom check
-	public static final String ROOMEXIST = "roomexist";
-	public static final String EXIST = "exist";
 
-	public static  final String HEARTBEAT = "heartbeat";
-	
+	public static final String LOGIN= "login";
+	public static final String PASSWORD = "password";
+	public static final String ACCOUNT = "account";
+	public static final String ACCESSTOKEN="accessToken";
+	public static final String USERNAME = "username";
+
 }

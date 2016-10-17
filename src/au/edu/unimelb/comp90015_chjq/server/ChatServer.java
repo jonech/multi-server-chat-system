@@ -54,10 +54,10 @@ public class ChatServer extends Thread
 		listeningSocket = SSLServerSocketFactory.getDefault().createServerSocket(
 							clientPort, 10, InetAddress.getByName(serverAddress));
 		
-		roomList = new ArrayList<>();
-		localClientIDList = new ArrayList<>();
-		lockedRoomID = new HashMap<>();
-		lockedClientID = new HashMap<>();
+		roomList = new ArrayList<ChatRoom>();
+		localClientIDList = new ArrayList<String>();
+		lockedRoomID = new HashMap<String, String>();
+		lockedClientID = new HashMap<String, String>();
 		
 		// create a main hall on the server
 		serverMainHall = new ChatRoom(serverID, "MainHall-"+serverID, "SERVER-"+serverID);
@@ -77,7 +77,8 @@ public class ChatServer extends Thread
 			listenServer.start();
 			
 			selfIntroduce();
-			
+			HeartBeatSignal heartBeatThread = new HeartBeatSignal();
+			heartBeatThread.run();
 			while (true) {
 				// accept new client
 				Socket clientSocket = listeningSocket.accept();
@@ -179,7 +180,7 @@ public class ChatServer extends Thread
 		String broadcast = broadcastJSON.toJSONString();
 
 		// create the thread for sending LOCKROOMID request to other ChatServer
-		List<LockRequester> threads = new ArrayList<>();
+		List<LockRequester> threads = new ArrayList<LockRequester>();
 		for (HashMap.Entry<String, ChatServerInfo> entry : ServerState.getInstance().getServerInfoMap().entrySet()) {
 			// skip if it loops to the ChatServer itself
 			if (entry.getKey().matches(serverID))
@@ -268,7 +269,7 @@ public class ChatServer extends Thread
 		String broadcast = broadcastJSON.toJSONString();
 
 		// create a thread to send a LOCKIDENTITY request to other server
-		List<LockRequester> threads = new ArrayList<>();
+		List<LockRequester> threads = new ArrayList<LockRequester>();
 		for (HashMap.Entry<String, ChatServerInfo> entry : ServerState.getInstance().getServerInfoMap().entrySet()) {
 			// skip if it loops to the ChatServer itself
 			if (entry.getKey().matches(serverID))
