@@ -1,8 +1,10 @@
 package au.edu.unimelb.comp90015_chjq.server;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.mortbay.util.ajax.JSON;
 
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
@@ -138,7 +140,41 @@ public class ServerListener extends Thread {
 					ServerState.getInstance().addRemoteServer(newServerID, host, Integer.parseInt(port));
 					responseJSON = null;
 				}
-
+				
+				/* server request ROOMLIST */
+				else if (requestType.matches(JSONTag.ROOMLIST)) {
+					responseJSON.put(JSONTag.TYPE, JSONTag.ROOMLIST);
+					JSONArray roomArray = new JSONArray();
+					
+					// main hall
+					roomArray.add(serverObject.getServerMainHall().getRoomName());
+					// local chat room
+					for (ChatRoom room : serverObject.getLocalRoomList()) {
+						roomArray.add(room.getRoomName());
+					}
+					responseJSON.put(JSONTag.ROOMS, roomArray);
+				}
+				
+				/* server request ROOMEXIST */
+				else if (requestType.matches(JSONTag.ROOMEXIST)) {
+					// prepare response JSON
+					responseJSON.put(JSONTag.TYPE, JSONTag.ROOMEXIST);
+					responseJSON.put(JSONTag.SERVERID, this.serverID);
+					responseJSON.put(JSONTag.HOST, serverObject.listeningSocket.getInetAddress().getHostAddress());
+					responseJSON.put(JSONTag.PORT, Integer.toString(serverObject.listeningSocket.getLocalPort()));
+					
+					// check if the room exist on the chat server
+					String roomID = (String) requestJSON.get(JSONTag.ROOMID);
+					ChatRoom room = serverObject.getRoom(roomID);
+					if (room == null) {
+						responseJSON.put(JSONTag.EXIST, JSONTag.FALSE);
+					}
+					else {
+						responseJSON.put(JSONTag.EXIST, JSONTag.TRUE);
+					}
+				}
+				
+				/* server HEARTBEAT signal */
 				else if (requestType.matches(JSONTag.HEARTBEAT)) {
 					responseJSON.put(JSONTag.TYPE, JSONTag.HEARTBEAT);
 					System.out.println("HeartBeat Replied.");

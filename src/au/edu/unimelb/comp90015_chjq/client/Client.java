@@ -47,7 +47,14 @@ public class Client {
 				debug = values.isDebug();
 
 				//socket = new Socket(hostname, port);
-				socket = SSLSocketFactory.getDefault().createSocket(hostname, port);
+				SSLSocketFactory f = (SSLSocketFactory)SSLSocketFactory.getDefault();
+				socket = f.getDefault().createSocket(hostname, port);
+
+//				BufferedWriter w = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+//				System.out.println("established");
+//				w.write("established" + "\n");
+//				w.flush();
+
 
 			} catch (CmdLineException e) {
 				e.printStackTrace();
@@ -93,12 +100,6 @@ public class Client {
 
 				accountInfo = new AccountInfo(account, password, null);
 			}
-
-			String sendToServer = ClientMessages.getLoginRequest(account, password, null).toJSONString();
-			BufferedWriter w = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-			System.out.println(sendToServer);
-			w.write(sendToServer + "\n");
-			w.flush();
 
 			// start sending thread
 			MessageSendThread messageSendThread = new MessageSendThread(socket, state, debug, accountInfo);

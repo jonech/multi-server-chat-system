@@ -1,6 +1,9 @@
 package au.edu.unimelb.comp90015_chjq.server;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
@@ -24,20 +27,24 @@ public class ChatServer extends Thread
 
 	// local room list
 	private List<ChatRoom> roomList;
-
+	private ChatRoom serverMainHall;
+	
 	// local clients
 	private List<String> localClientIDList;
 
 	// for lock and request from server
 	public HashMap<String, String> lockedRoomID;
 	public HashMap<String, String> lockedClientID;
-
+	
+	
+	
 	public ChatServer(String serverID, String serverAddress, int clientPort, int coordPort) throws IOException
 	{
 		// set keystore
 		System.setProperty("javax.net.ssl.keyStore", "chjq-keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
 		System.setProperty("javax.net.ssl.trustStore", "chjq-keystore");
+		//System.setProperty("javax.net.debug", "all");
 		
 		this.serverID = serverID;
 		this.serverAddress = serverAddress;
@@ -51,6 +58,9 @@ public class ChatServer extends Thread
 		localClientIDList = new ArrayList<String>();
 		lockedRoomID = new HashMap<String, String>();
 		lockedClientID = new HashMap<String, String>();
+		
+		// create a main hall on the server
+		serverMainHall = new ChatRoom(serverID, "MainHall-"+serverID, "SERVER-"+serverID);
 		
 		// create a MainHall Room
 		//ServerState.getInstance().createGlobalChatRoom(serverID, "MainHall-"+serverID, "SERVER-"+serverID);
@@ -118,7 +128,17 @@ public class ChatServer extends Thread
 	public synchronized List<String> getLocalClientIDList() {
 		return localClientIDList;
 	}
-
+	
+	/* get the main hall */
+	public synchronized ChatRoom getServerMainHall() { return serverMainHall; }
+	
+	/* put client into Main Hall */
+	public synchronized ChatRoom joinMainHall(ClientConnection client)
+	{
+		serverMainHall.clientJoin(client, "", true);
+		return serverMainHall;
+	}
+	
 	/* find the local chat room object from the server */
 	public synchronized ChatRoom getRoom(String roomName) {
 		for (ChatRoom room : roomList) {
@@ -209,7 +229,7 @@ public class ChatServer extends Thread
 			String requestAddress = entry.getValue().address;
 			
 			//LockReleaser releaser = new LockReleaser(entry.getKey(), entry.getValue(), releaseJSON.toJSONString());
-			LockReleaser releaser = new LockReleaser(requestServerID, requestAddress, requestPort, broadcast);
+			LockReleaser releaser = new LockReleaser(requestServerID, requestAddress, requestPort, releaseJSON.toJSONString());
 			Thread t = new Thread(releaser);
 			t.start();
 		}
@@ -314,6 +334,117 @@ public class ChatServer extends Thread
 		}
 
 	}
+	
+	/**
+	 * Request room list from a remote chat server
+	 * @return
+	 * @throws InterruptedException
+	 * @throws ParseException
+	 */
+	public synchronized List<String> requestRoomList() throws InterruptedException, ParseException
+	{
+		// make a ROOMLIST JSON broadcast to other server
+		JSONObject broadcastJSON = new JSONObject();
+		broadcastJSON.put(JSONTag.TYPE, JSONTag.ROOMLIST);
+		broadcastJSON.put(JSONTag.SERVERID, serverID);
+		String broadcast = broadcastJSON.toJSONString();
+		
+		// create a thread to send ROOMLIST request to server
+		List<LongSender> threads = new ArrayList<>();
+		for (ChatServerInfo remoteServer : ServerState.getInstance().getRemoteServerInfo()) {
+			
+			String requestServerID = remoteServer.id;
+			int requestPort = Integer.parseInt(remoteServer.port);
+			String requestAddress = remoteServer.address;
+			
+			LongSender t = new LongSender(requestServerID, requestAddress, requestPort, broadcast);
+			
+			t.start();
+			threads.add(t);
+		}
+		
+		List<String> remoteRoomList = new ArrayList<>();
+		// read the result
+		for (LongSender sender : threads) {
+			
+			// obtain the result of the Requester
+			// but release it if the request is not done
+			synchronized (sender.result) {
+				while (!sender.result.requestDone)
+					sender.result.wait();
+				
+				JSONObject response = (JSONObject) new JSONParser().parse(sender.result.responseMessage);
+				JSONArray rooms = (JSONArray) response.get(JSONTag.ROOMS);
+
+				if (rooms == null) {
+					return null;
+				}
+				
+				for (int i=0; i<rooms.size(); i++) {
+					remoteRoomList.add((String) rooms.get(i));
+				}
+			}
+		}
+		
+		return remoteRoomList;
+	}
+	
+	/**
+	 * Request other server and see if they have the local chat room
+	 * @param roomName
+	 * @return
+	 * @throws InterruptedException
+	 * @throws ParseException
+	 */
+	public synchronized ChatServerInfo requestRemoteChatRoom(String roomName) throws InterruptedException, ParseException
+	{
+		// make a ROOMLIST JSON broadcast to other server
+		JSONObject broadcastJSON = new JSONObject();
+		broadcastJSON.put(JSONTag.TYPE, JSONTag.ROOMEXIST);
+		broadcastJSON.put(JSONTag.SERVERID, serverID);
+		broadcastJSON.put(JSONTag.ROOMID, roomName);
+		String broadcast = broadcastJSON.toJSONString();
+		
+		// create a thread to send ROOMLIST request to server
+		List<LongSender> threads = new ArrayList<>();
+		for (ChatServerInfo remoteServer : ServerState.getInstance().getRemoteServerInfo()) {
+			
+			String requestServerID = remoteServer.id;
+			int requestPort = Integer.parseInt(remoteServer.port);
+			String requestAddress = remoteServer.address;
+			
+			LongSender t = new LongSender(requestServerID, requestAddress, requestPort, broadcast);
+			
+			t.start();
+			threads.add(t);
+		}
+		
+		// read the result
+		for (LongSender sender : threads) {
+			
+			// obtain the result of the Requester
+			// but release it if the request is not done
+			synchronized (sender.result) {
+				while (!sender.result.requestDone)
+					sender.result.wait();
+				
+				JSONObject response = (JSONObject) new JSONParser().parse(sender.result.responseMessage);
+				String exist = (String) response.get(JSONTag.EXIST);
+				
+				if (exist.equals(JSONTag.TRUE)) {
+					String host = (String) response.get(JSONTag.HOST);
+					String port = (String) response.get(JSONTag.PORT);
+					String serverId = (String) response.get(JSONTag.SERVERID);
+					
+					return new ChatServerInfo(serverId, host, port, false);
+					
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 	
 	
 	/**
