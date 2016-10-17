@@ -177,7 +177,7 @@ public class ServerListener extends Thread {
 				/* server HEARTBEAT signal */
 				else if (requestType.matches(JSONTag.HEARTBEAT)) {
 					responseJSON.put(JSONTag.TYPE, JSONTag.HEARTBEAT);
-					System.out.print("HeartBeat Replied.");
+					System.out.println("HeartBeat Replied.");
 				}
 				
 				// don't bother writing to the connected server if there is nothing to write

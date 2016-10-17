@@ -7,21 +7,29 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.ArrayList;
-public class HeartBeatSignal extends Thread{
-private int DEFAULT_SAMPLING_PERIOD = 20000;
+
+
+public class HeartBeatSignal extends Thread
+{
+	private int DEFAULT_SAMPLING_PERIOD = 500;
 
     @Override
-    public void run() {
-        while (true) {
-            HashMap<String, ChatServerInfo> serverInfoMap = new HashMap<String, ChatServerInfo>(ServerState.getInstance().getServerInfoMap());
-            ArrayList<SignalThread> threadList = new ArrayList<SignalThread>();
+    public void run()
+    {
+        while (true)
+        {
+	        HashMap<String, ChatServerInfo> serverInfoMap = new HashMap<>(ServerState.getInstance().getServerInfoMap());
+            ArrayList<SignalThread> threadList = new ArrayList<>();
             Iterator iterator = serverInfoMap.entrySet().iterator();
+            
             while (iterator.hasNext()) {
                 HashMap.Entry<String, ChatServerInfo> pair = (HashMap.Entry<String, ChatServerInfo>)iterator.next();
-                if (pair.getValue().isLocal)
+                if (pair.getValue().isLocal || pair.getValue().id.contains("auth"))
                     iterator.remove();
             }
+            
             CountDownLatch endSync = new CountDownLatch(serverInfoMap.size());
+            
             for (String serverID : serverInfoMap.keySet()) {
                 String address = serverInfoMap.get(serverID).address;
                 int port = Integer.parseInt(serverInfoMap.get(serverID).port);
@@ -29,13 +37,17 @@ private int DEFAULT_SAMPLING_PERIOD = 20000;
                 threadList.add(thread);
                 thread.start();
             }
+            
             try {
                 endSync.await();
                 for (SignalThread thread : threadList)
-                    if (!thread.getResult())
+                    if (!thread.getResult()) {
                         ServerState.getInstance().removeRemoteServer(thread.getServerId());
+                        //System.out.println(thread.getServerId() + " crash");
+                    }
                 Thread.sleep(DEFAULT_SAMPLING_PERIOD);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
 

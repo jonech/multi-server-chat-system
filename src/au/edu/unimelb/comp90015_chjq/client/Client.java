@@ -42,21 +42,15 @@ public class Client {
 			try {
 				parser.parseArgument(args);
 				String hostname = values.getHost();
-				identity = values.getIdeneity();
+				identity = values.getIdentity();
 				int port = values.getPort();
 				debug = values.isDebug();
 
-				//socket = new Socket(hostname, port);
-				SSLSocketFactory f = (SSLSocketFactory)SSLSocketFactory.getDefault();
-				socket = f.getDefault().createSocket(hostname, port);
 
-//				BufferedWriter w = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-//				System.out.println("established");
-//				w.write("established" + "\n");
-//				w.flush();
-
-
-			} catch (CmdLineException e) {
+				socket = SSLSocketFactory.getDefault().createSocket(hostname, port);
+				
+			}
+			catch (CmdLineException e) {
 				e.printStackTrace();
 			}
 
@@ -110,9 +104,11 @@ public class Client {
 			Thread receiveThread = new Thread(new MessageReceiveThread(socket, state, messageSendThread, debug));
 			receiveThread.start();
 
-		} catch (UnknownHostException e) {
+		}
+		catch (UnknownHostException e) {
 			System.out.println("Unknown host");
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			System.out.println("Communication Error: " + e.getMessage());
 		}
 	}

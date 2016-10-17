@@ -1,11 +1,13 @@
 package au.edu.unimelb.comp90015_chjq.client;
 
 
+/*
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
+*/
+import java.io.*;
 
 import java.net.Socket;
 
@@ -83,16 +85,6 @@ public class MessageReceiveThread implements Runnable {
 			else{
 				System.out.println("Wellcome, " + username);
 				System.out.println("Please create a id you want to use:");
-
-
-//				String id = new BufferedReader(new InputStreamReader(System.in)).readLine();
-//
-//				if(debug){
-//					System.out.println("id is:"+id);
-//				}
-//				messageSendThread.MessageSend(socket, "#newidentity "+id);
-
-
 
 			}
 			return;

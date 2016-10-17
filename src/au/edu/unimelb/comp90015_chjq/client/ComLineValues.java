@@ -32,7 +32,7 @@ public class ComLineValues {
 		return port;
 	}
 
-	public String getIdeneity() {
+	public String getIdentity() {
 		return identity;
 	}
 

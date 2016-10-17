@@ -78,9 +78,11 @@ public class ChatServer extends Thread
 			
 			selfIntroduce();
 			HeartBeatSignal heartBeatThread = new HeartBeatSignal();
-			heartBeatThread.run();
+			heartBeatThread.start();
+			
 			while (true) {
 				// accept new client
+				System.out.println("listening to new client::");
 				Socket clientSocket = listeningSocket.accept();
 
 				// put client to new client connection thread
@@ -183,7 +185,7 @@ public class ChatServer extends Thread
 		List<LockRequester> threads = new ArrayList<LockRequester>();
 		for (HashMap.Entry<String, ChatServerInfo> entry : ServerState.getInstance().getServerInfoMap().entrySet()) {
 			// skip if it loops to the ChatServer itself
-			if (entry.getKey().matches(serverID))
+			if (entry.getKey().matches(serverID) || entry.getKey().equals("auth"))
 				continue;
 			
 			String requestServerID = entry.getKey();
@@ -221,7 +223,7 @@ public class ChatServer extends Thread
 		// tell other ChatServer to release the room ID regardless of approved or not
 		for (HashMap.Entry<String, ChatServerInfo> entry : ServerState.getInstance().getServerInfoMap().entrySet()) {
 			// skip if it loops to the ChatServer itself
-			if (entry.getKey().matches(serverID))
+			if (entry.getKey().matches(serverID) || entry.getKey().equals("auth"))
 				continue;
 			
 			String requestServerID = entry.getKey();
@@ -272,7 +274,7 @@ public class ChatServer extends Thread
 		List<LockRequester> threads = new ArrayList<LockRequester>();
 		for (HashMap.Entry<String, ChatServerInfo> entry : ServerState.getInstance().getServerInfoMap().entrySet()) {
 			// skip if it loops to the ChatServer itself
-			if (entry.getKey().matches(serverID))
+			if (entry.getKey().matches(serverID) || entry.getKey().equals("auth"))
 				continue;
 			
 			String requestServerID = entry.getKey();
@@ -311,7 +313,7 @@ public class ChatServer extends Thread
 		// tell other server to release the client ID regardless of approved or not
 		for (HashMap.Entry<String, ChatServerInfo> entry : ServerState.getInstance().getServerInfoMap().entrySet()) {
 			// skip if it loops to the ChatServer itself
-			if (entry.getKey().matches(serverID))
+			if (entry.getKey().matches(serverID) || entry.getKey().equals("auth"))
 				continue;
 			
 			String requestServerID = entry.getKey();
@@ -352,6 +354,9 @@ public class ChatServer extends Thread
 		// create a thread to send ROOMLIST request to server
 		List<LongSender> threads = new ArrayList<>();
 		for (ChatServerInfo remoteServer : ServerState.getInstance().getRemoteServerInfo()) {
+			
+			if (remoteServer.id.equals("auth"))
+				continue;
 			
 			String requestServerID = remoteServer.id;
 			int requestPort = Integer.parseInt(remoteServer.port);
@@ -408,6 +413,9 @@ public class ChatServer extends Thread
 		// create a thread to send ROOMLIST request to server
 		List<LongSender> threads = new ArrayList<>();
 		for (ChatServerInfo remoteServer : ServerState.getInstance().getRemoteServerInfo()) {
+			
+			if (remoteServer.id.equals("auth"))
+				continue;
 			
 			String requestServerID = remoteServer.id;
 			int requestPort = Integer.parseInt(remoteServer.port);
