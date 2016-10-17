@@ -14,6 +14,9 @@ public class ServerState {
 
 	private static ServerState instance;
 
+	public static String authServerAddr;
+	public static int authServerPort;
+
 	// cache up all the ChatServer
 	private HashMap<String, ChatServer> serverObjectMap;
 	
