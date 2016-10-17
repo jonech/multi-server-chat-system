@@ -1,4 +1,5 @@
 package au.edu.unimelb.comp90015_chjq.server;
+import java.net.InetAddress;
 import java.util.concurrent.CountDownLatch;
 import java.net.Socket;
 import java.io.BufferedReader;
@@ -6,8 +7,9 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import org.json.simple.JSONObject;
+import javax.net.ssl.SSLSocketFactory;
 public class SignalThread extends Thread{
-    private int DEFAULT_SAMPLING_PERIOD = 20000;
+    private int DEFAULT_SAMPLING_PERIOD = 5000;
     private CountDownLatch endSync;
     private int port;
     private String address;
@@ -22,7 +24,8 @@ public class SignalThread extends Thread{
         this.address = address;
         this.serverId = serverId;
         try {
-            socket = new Socket(address, port);
+            System.out.println(serverId + " " + address + " " + port);
+            socket = SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(address), port);
             writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
         } catch (Exception e) {
@@ -44,9 +47,11 @@ public class SignalThread extends Thread{
                 result = true;
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println(serverId + "crash");
         } finally {
             try {
-                socket.close();
+                if (socket != null)
+                    socket.close();
                 endSync.countDown();
             } catch (Exception e) {
                 e.printStackTrace();

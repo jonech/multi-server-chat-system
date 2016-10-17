@@ -45,9 +45,11 @@ public class ServerState {
 		Iterator<ChatRoom> it = globalRoomList.iterator();
 		while (it.hasNext()) {
 			ChatRoom room = it.next();
-			if (room.server.equals(serverID))
+			//System.out.println(room.server + " " + serverID + " " + room.server.equals(serverID));
+			if (room.server.equals(serverID)) {
 				it.remove();
 				System.out.println("remove global room " + room.getRoomName());
+			}
 		}
 	}
 	/* get a list of Main-Hall */

@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.ArrayList;
 public class HeartBeatSignal extends Thread{
-private int DEFAULT_SAMPLING_PERIOD = 20000;
+private int DEFAULT_SAMPLING_PERIOD = 5;
 
     @Override
     public void run() {
@@ -32,8 +32,10 @@ private int DEFAULT_SAMPLING_PERIOD = 20000;
             try {
                 endSync.await();
                 for (SignalThread thread : threadList)
-                    if (!thread.getResult())
+                    if (!thread.getResult()) {
                         ServerState.getInstance().removeRemoteServer(thread.getServerId());
+                        //System.out.println(thread.getServerId() + " crash");
+                    }
                 Thread.sleep(DEFAULT_SAMPLING_PERIOD);
             } catch (Exception e) {
                 e.printStackTrace();
