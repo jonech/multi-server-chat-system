@@ -48,7 +48,17 @@ public class MessageSendThread implements Runnable {
 			System.exit(1);
 		}
 
+		String id = cmdin.nextLine();
+		try {
+			MessageSend(socket, "#newidentity "+id);
+		}catch (IOException e){
+
+		}
+
+
+
 		while (true) {
+
 			String msg = cmdin.nextLine();
 			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			try {
