@@ -148,7 +148,7 @@ public class ServerState {
 		// broadcast to all servers
 		for (HashMap.Entry<String, ChatServerInfo> entry : ServerState.getInstance().getServerInfoMap().entrySet()) {
 			// skip if it loops to the ChatServer itself or local servers
-			if (entry.getKey().matches(serverID) || entry.getValue().isLocal)
+			if (entry.getKey().matches(serverID) || entry.getValue().isLocal || entry.getKey().equals("auth"))
 				continue;
 			
 			String requestServerID = entry.getKey();
