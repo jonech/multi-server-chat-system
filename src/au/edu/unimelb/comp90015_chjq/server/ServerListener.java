@@ -138,7 +138,11 @@ public class ServerListener extends Thread {
 					ServerState.getInstance().addRemoteServer(newServerID, host, Integer.parseInt(port));
 					responseJSON = null;
 				}
-				
+
+				else if (requestType.matches(JSONTag.HEARTBEAT)) {
+					responseJSON.put(JSONTag.TYPE, JSONTag.HEARTBEAT);
+					System.out.print("HeartBeat Replied.");
+				}
 				
 				// don't bother writing to the connected server if there is nothing to write
 				if (responseJSON != null) {

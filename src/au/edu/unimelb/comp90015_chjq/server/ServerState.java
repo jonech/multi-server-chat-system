@@ -5,6 +5,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * Server State stores ChatServer and Main-Halls
@@ -25,7 +26,6 @@ public class ServerState {
 	
 	// all the Main-Hall
 	private List<ChatRoom> globalRoomList;
-
 	private ServerState() {
 		globalRoomList = new ArrayList<ChatRoom>();
 		serverObjectMap = new HashMap<String, ChatServer>();
@@ -39,6 +39,17 @@ public class ServerState {
 		return instance;
 	}
 
+	public synchronized  void removeRemoteServer(String serverID) {
+		serverInfoMap.remove(serverID);
+		System.out.println("Remove remote server " + serverID);
+		Iterator<ChatRoom> it = globalRoomList.iterator();
+		while (it.hasNext()) {
+			ChatRoom room = it.next();
+			if (room.server.equals(serverID))
+				it.remove();
+				System.out.println("remove global room " + room.getRoomName());
+		}
+	}
 	/* get a list of Main-Hall */
 	public synchronized List<ChatRoom> getGlobalRooms() { return globalRoomList; }
 	
@@ -191,9 +202,12 @@ public class ServerState {
 		serverObjectMap.remove(serverID);
 		
 		// find the MainHall of the server and remove
-		for (ChatRoom mainhall : globalRoomList) {
-			if (mainhall.server.equals(serverID)) {
-				globalRoomList.remove(mainhall);
+		Iterator<ChatRoom> it = globalRoomList.iterator();
+		while (it.hasNext()) {
+			ChatRoom room = it.next();
+			if (room.server.equals(serverID)) {
+				it.remove();
+				System.out.println("Remove room " + room.getRoomName());
 			}
 		}
 	}

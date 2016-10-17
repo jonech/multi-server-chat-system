@@ -9,7 +9,6 @@ public class ChatServerInfo
 	public String port;
 	public String id;
 	public boolean isLocal;
-	
 	public ChatServerInfo(String id, String address, String port, boolean isLocal)
 	{
 		this.address = address;

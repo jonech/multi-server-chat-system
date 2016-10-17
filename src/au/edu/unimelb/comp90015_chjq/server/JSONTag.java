@@ -49,4 +49,6 @@ public class JSONTag {
 	// server self introduce
 	public static final String NEWSERVERID = "newserverid";
 
+	public static  final String HEARTBEAT = "heartbeat";
+
 }

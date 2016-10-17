@@ -67,7 +67,8 @@ public class ChatServer extends Thread
 			listenServer.start();
 			
 			selfIntroduce();
-			
+			HeartBeatSignal heartBeatThread = new HeartBeatSignal();
+			heartBeatThread.run();
 			while (true) {
 				// accept new client
 				Socket clientSocket = listeningSocket.accept();
