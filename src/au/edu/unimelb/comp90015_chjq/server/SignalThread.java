@@ -13,7 +13,7 @@ import javax.net.ssl.SSLSocketFactory;
 public class SignalThread extends Thread
 {
 
-    private int DEFAULT_SAMPLING_PERIOD = 5000;
+    private int DEFAULT_SAMPLING_PERIOD = 3000;
     private CountDownLatch endSync;
     private int port;
     private String address;

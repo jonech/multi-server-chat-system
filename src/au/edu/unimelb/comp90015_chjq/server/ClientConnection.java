@@ -52,8 +52,9 @@ public class ClientConnection extends Thread {
 		try {
 			MessageReader messageReader = new MessageReader(reader, messageQueue);
 			messageReader.start();
-
+			
 			while (true) {
+				
 				Message message = messageQueue.take();
 
 				if(!message.isFromConnection() && message.getMessage().equals("exit")) {
@@ -69,9 +70,6 @@ public class ClientConnection extends Thread {
 					this.currentRoom.clientLeave(this, mainHall.getRoomName(), true);
 					mainHall.clientJoin(this, this.currentRoom.getRoomName(), false);
 					this.currentRoom = mainHall;
-					/*
-					ServerState.getInstance().safeChangeRoom(currentRoom,
-							ServerState.getInstance().getServerObject(getName()).getServerMainHall(), this);*/
 				}
 
 				if(message.isFromConnection()) {
@@ -98,13 +96,11 @@ public class ClientConnection extends Thread {
 							write(result);
 
 
-						}catch (IOException e) {
+						}
+						catch (IOException e) {
 							//e.printStackTrace();
 
 						}
-
-
-
 
 					}
 

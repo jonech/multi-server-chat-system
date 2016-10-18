@@ -71,6 +71,9 @@ public class LongSender extends Thread
 		}
 		catch (IOException e) {
 			e.printStackTrace();
+			result.responseMessage = null;
+			result.requestDone = true;
+			result.notify();
 		}
 		catch (ParseException e) {
 			e.printStackTrace();

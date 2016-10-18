@@ -82,9 +82,8 @@ public class ChatServer extends Thread
 			
 			while (true) {
 				// accept new client
-				System.out.println("listening to new client::");
+				
 				Socket clientSocket = listeningSocket.accept();
-
 				// put client to new client connection thread
 				ClientConnection clientConnection = new ClientConnection(clientSocket, serverID);
 				System.out.println(clientSocket.getLocalSocketAddress() + ": new client connected from: " +clientSocket.getRemoteSocketAddress());
@@ -378,6 +377,10 @@ public class ChatServer extends Thread
 				while (!sender.result.requestDone)
 					sender.result.wait();
 				
+				// crash happended
+				if (sender.result.responseMessage == null)
+					return null;
+				
 				JSONObject response = (JSONObject) new JSONParser().parse(sender.result.responseMessage);
 				JSONArray rooms = (JSONArray) response.get(JSONTag.ROOMS);
 
@@ -435,6 +438,10 @@ public class ChatServer extends Thread
 			synchronized (sender.result) {
 				while (!sender.result.requestDone)
 					sender.result.wait();
+				
+				// crash happended
+				if (sender.result.responseMessage == null)
+					return null;
 				
 				JSONObject response = (JSONObject) new JSONParser().parse(sender.result.responseMessage);
 				String exist = (String) response.get(JSONTag.EXIST);
