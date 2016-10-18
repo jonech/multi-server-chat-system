@@ -50,7 +50,6 @@ public class ChatServer extends Thread
 		this.serverAddress = serverAddress;
 		this.coordPort = coordPort;
 		// create socket for clients port
-		//listeningSocket = new ServerSocket(clientPort, 10, InetAddress.getByName(serverAddress));
 		listeningSocket = SSLServerSocketFactory.getDefault().createServerSocket(
 							clientPort, 10, InetAddress.getByName(serverAddress));
 		
@@ -61,10 +60,6 @@ public class ChatServer extends Thread
 		
 		// create a main hall on the server
 		serverMainHall = new ChatRoom(serverID, "MainHall-"+serverID, "SERVER-"+serverID);
-		
-		// create a MainHall Room
-		//ServerState.getInstance().createGlobalChatRoom(serverID, "MainHall-"+serverID, "SERVER-"+serverID);
-		//ServerState.getInstance().serverConnected(serverID, this, serverAddress, coordPort);
 	}
 
 	public void run()
@@ -77,9 +72,12 @@ public class ChatServer extends Thread
 			listenServer.start();
 			
 			selfIntroduce();
-			HeartBeatSignal heartBeatThread = new HeartBeatSignal();
-			heartBeatThread.start();
-			
+
+			HeartBeatListener listener = new HeartBeatListener(coordPort);
+            listener.start();
+
+            HeartBeatSignal heartBeatThread = new HeartBeatSignal();
+            heartBeatThread.start();
 			while (true) {
 				// accept new client
 				
